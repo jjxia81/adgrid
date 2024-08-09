@@ -7,22 +7,29 @@
 
 #include "tet_quality.h"
 
+///Below are functions used in `tet_radius_ratio`
+///
+/// returns the dot product of input arrays `a` and `b`.
 double dot(const std::valarray<double> &a, const std::valarray<double> &b) {
     return (a * b).sum();
 }
 
+/// returns the normalized vector of the input array `a` where it represents a vector in 3D.
 std::valarray<double> normalize(const std::valarray<double> &a) {
     return a / sqrt(dot(a, a));
 }
 
+/// returns the norm of the input array `a` where it represents a vector in 3D.
 double norm(const std::valarray<double> &a) {
     return sqrt(dot(a, a));
 }
 
+/// returns a perpendicular vector for the 2D vector `a`.
 std::valarray<double> perp(const std::valarray<double> &a){
     return {-a[1], a[0]};
 }
 
+/// returns a cross product for the 3D vector `a` and `b`.
 std::valarray<double> cross(const std::valarray<double> &a, const std::valarray<double> &b) {
     std::valarray<double> c(3);
     c[0] = a[1] * b[2] - a[2] * b[1];

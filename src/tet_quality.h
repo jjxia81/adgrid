@@ -26,7 +26,7 @@ const std::array<std::string, 6> tet_metric_labels = {"total tet number: ",
 ///
 double tet_radius_ratio(const std::array<std::valarray<double>,4> &pts);
 
-/// returns the dot product of input arrays `a` and `b`.
+
 double dot(const std::valarray<double> &a, const std::valarray<double> &b);
 
 /// returns the normalized vector of the input array `a` where it represents a vector in 3D.

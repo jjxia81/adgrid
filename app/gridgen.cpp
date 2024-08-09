@@ -15,7 +15,7 @@
 #include "grid_refine.h"
 
 
-using namespace mtet;
+//using namespace mtet;
 
 int main(int argc, const char *argv[])
 {
@@ -83,13 +83,30 @@ int main(int argc, const char *argv[])
         curve_network = true;
     }
     
-    
-    auto implicit_func = [&](){
-        
-    }
+    /// Read implicit function
+    std::vector<std::unique_ptr<ImplicitFunction<double>>> functions;
+    load_functions(function_file, functions);
+    const size_t funcNum = functions.size();
     
     ///
-    /// the lambda funciton for csg tree iteration/evaluation.
+    /// the lambda function for function evaluations
+    ///  @param[in] data            The 3D coordinate
+    ///  @param[in] funcNum         The number of functions
+    ///
+    ///  @return        A vector of `Eigen::RowVector4d`.The vector size is the function number. Each eigen vector represents the value at 0th index and gradients at {1, 2, 3} index.
+    auto implicit_func = [&](std::span<const Scalar, 3> data, size_t funcNum){
+        llvm_vecsmall::SmallVector<Eigen::RowVector4d, 20> vertex_eval(funcNum);
+        for(size_t funcIter = 0; funcIter < funcNum; funcIter++){
+            auto &func = functions[funcIter];
+            Eigen::Vector4d eval;
+            eval[0] = func->evaluate_gradient(data[0], data[1], data[2], eval[1], eval[2], eval[3]);
+            vertex_eval[funcIter] = eval;
+        }
+        return vertex_eval;
+    };
+    
+    ///
+    /// the lambda function for csg tree iteration/evaluation.
     /// @param[in] funcInt          Given an input of value range std::array<double, 2> for an arbitrary number of functions
     /// @return   A value range of this CSG operation in a form of `std::array<double, 2>` and a list of active function in a form of    `llvm_vecsmall::SmallVector<int, 20>>`
     ///
@@ -105,9 +122,9 @@ int main(int argc, const char *argv[])
     
     //perform main grid refinement algorithm:
     tet_metric metric_list;
-    //an array of 8 {total time getting the multiple indices, total time,time spent on single function, time spent on double functions, time spent on triple functions time spent on double functions' zero crossing test, time spent on three functions' zero crossing test, total subdivision time, total evaluation time,total splitting time}
+    //an array of 10 timings: {total time getting the multiple indices, total time,time spent on single function, time spent on double functions, time spent on triple functions time spent on double functions' zero crossing test, time spent on three functions' zero crossing test, total subdivision time, total evaluation time,total splitting time}
     std::array<double, timer_amount> profileTimer = {0,0,0,0,0,0,0,0,0,0};
-    if (!gridRefine(function_file, mode, threshold, alpha, max_elements, csg_func, grid, metric_list, profileTimer))
+    if (!gridRefine(mode, curve_network, threshold, alpha, max_elements, funcNum, implicit_func, csg_func, grid, metric_list, profileTimer))
     {
         throw std::runtime_error("ERROR: unsuccessful grid refinement");
     }

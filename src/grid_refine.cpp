@@ -16,22 +16,19 @@ uint64_t vertexHash(std::span<VertexId, 4>& x)
 }
 
 bool gridRefine(
-                const std::string function_file,
                 const int mode,
+                const bool curve_network,
                 const double threshold,
                 const double alpha,
                 const int max_elements,
+                const size_t funcNum,
+                const std::function<llvm_vecsmall::SmallVector<Eigen::RowVector4d, 20>(std::span<const Scalar, 3>, size_t)> func,
                 const std::function<std::pair<std::array<double, 2>, llvm_vecsmall::SmallVector<int, 20>>(llvm_vecsmall::SmallVector<std::array<double, 2>, 20>)> csg_func,
                 mtet::MTetMesh &grid,
                 tet_metric &metric_list,
                 std::array<double, timer_amount> profileTimer
                 )
 {
-    /// Read implicit function
-    std::vector<std::unique_ptr<ImplicitFunction<double>>> functions;
-    load_functions(function_file, functions);
-    const size_t funcNum = functions.size();
-    
     /// Precomputing active multiples' indices:
     init_multi(funcNum, mode);
     
@@ -40,7 +37,8 @@ bool gridRefine(
     int sub_call_three = 0;
 
     /// initialize vertex map: vertex index -> {{f_i, gx, gy, gz} | for all f_i in the function}
-    using IndexMap = ankerl::unordered_dense::map<uint64_t, llvm_vecsmall::SmallVector<std::array<double, 4>, 20>>;
+    
+    using IndexMap = ankerl::unordered_dense::map<uint64_t, llvm_vecsmall::SmallVector<Eigen::RowVector4d, 20>>;
     IndexMap vertex_func_grad_map;
     vertex_func_grad_map.reserve(grid.get_num_vertices());
 
@@ -50,24 +48,18 @@ bool gridRefine(
     vertex_active_map.reserve(grid.get_num_tets());
 
     grid.seq_foreach_vertex([&](VertexId vid, std::span<const Scalar, 3> data)
-                            {
-        llvm_vecsmall::SmallVector<std::array<double, 4>, 20> func_gradList(funcNum);
-        for(size_t funcIter = 0; funcIter < funcNum; funcIter++){
-            auto &func = functions[funcIter];
-            std::array<double, 4> func_grad;
-            func_grad[0] = func->evaluate_gradient(data[0], data[1], data[2], func_grad[1], func_grad[2], func_grad[3]);
-            func_gradList[funcIter] = func_grad;
-        }
-        vertex_func_grad_map[value_of(vid)] = func_gradList;});
+                            {vertex_func_grad_map[value_of(vid)] = func(data, funcNum);});
 
     auto comp = [](std::pair<mtet::Scalar, mtet::EdgeId> e0,
                    std::pair<mtet::Scalar, mtet::EdgeId> e1)
     { return e0.first < e1.first; };
     std::vector<std::pair<mtet::Scalar, mtet::EdgeId>> Q;
 
-    std::array<std::array<double, 3>, 4> pts;
-    llvm_vecsmall::SmallVector<std::array<double, 4>, 20> vals(funcNum);
-    llvm_vecsmall::SmallVector<std::array<std::array<double, 3>,4>, 20> grads(funcNum);
+    Eigen::Matrix<double, 4, 3> pts;
+    std::array<llvm_vecsmall::SmallVector<Eigen::RowVector4d, 20>,4> tet_info;
+    for (size_t i = 0; i < tet_info.size(); i++){
+        tet_info[i].resize(funcNum);
+    }
     double activeTet = 0;
     auto push_longest_edge = [&](mtet::TetId tid)
     {
@@ -78,30 +70,20 @@ bool gridRefine(
             {
                 auto vid = vs[i];
                 auto coords = grid.get_vertex(vid);
-                pts[i][0] = coords[0];
-                pts[i][1] = coords[1];
-                pts[i][2] = coords[2];
+                pts.row(i) = Eigen::RowVector3d({coords[0], coords[1], coords[2]});
                 llvm_vecsmall::SmallVector<std::array<double, 4>, 20> func_gradList(funcNum);
+                
+                llvm_vecsmall::SmallVector<Eigen::RowVector4d, 20> func_info(funcNum);
                 std::array<double, 4> func_grad;
                 if (!vertex_func_grad_map.contains(value_of(vid))) {
-                    for(size_t funcIter = 0; funcIter < funcNum; funcIter++){
-                        auto &func = functions[funcIter];
-                        std::array<double, 4> func_grad;
-                        func_grad[0] = func->evaluate_gradient(coords[0], coords[1], coords[2], func_grad[1], func_grad[2],
-                                                               func_grad[3]);
-                        func_gradList[funcIter] = func_grad;
-                    }
-                    vertex_func_grad_map[value_of(vid)] = func_gradList;
+                    func_info = func(coords, funcNum);
+                    vertex_func_grad_map[value_of(vid)] = func_info;
                 }
                 else {
-                    func_gradList = vertex_func_grad_map[value_of(vid)];
+                    //func_gradList = vertex_func_grad_map[value_of(vid)];
+                    func_info = vertex_func_grad_map[value_of(vid)];
                 }
-                for(size_t funcIter = 0; funcIter < funcNum; funcIter++){
-                    vals[funcIter][i] = func_gradList[funcIter][0];
-                    grads[funcIter][i][0] = func_gradList[funcIter][1];
-                    grads[funcIter][i][1] = func_gradList[funcIter][2];
-                    grads[funcIter][i][2] = func_gradList[funcIter][3];
-                }
+                tet_info[i] = func_info;
             }
             //eval_timer.Stop();
         }
@@ -111,16 +93,17 @@ bool gridRefine(
             //Timer sub_timer(subdivision, [&](auto profileResult){profileTimer = combine_timer(profileTimer, profileResult);});
             switch (mode){
                 case IA:
-                    subResult = critIA(pts, vals, grads, threshold, isActive, sub_call_two, sub_call_three);
+                    subResult = critIA(pts, tet_info, funcNum, threshold, curve_network, isActive, sub_call_two, sub_call_three);
                     break;
                 case MI:
-                    subResult = critMI(pts, vals, grads, threshold, isActive, sub_call_two, sub_call_three);
+                    subResult = critMI(pts, tet_info, funcNum, threshold, curve_network, isActive, sub_call_two, sub_call_three);
                     break;
                 case CSG:
-                    subResult = critCSG(pts, vals, grads, csg_func, threshold, isActive, sub_call_two, sub_call_three);
+                    subResult = critCSG(pts, tet_info, funcNum, csg_func, threshold, curve_network, isActive, sub_call_two, sub_call_three);
                     break;
                 default:
                     throw std::runtime_error("no implicit complexes specified");
+                    return false;
             }
             //sub_timer.Stop();
         }
@@ -256,12 +239,12 @@ bool gridRefine(
     
     //save_metrics("stats.json", tet_metric_labels, metric_list);
     // save the mesh output for isosurfacing tool
-    //save_mesh_json("mesh.json", mesh);
+    //save_mesh_json("grid.json", mesh);
     // save the mesh output for isosurfacing tool
     //save_function_json("function_value.json", mesh, vertex_func_grad_map, funcNum);
     
     // write mesh and active tets
-    mtet::save_mesh("tet_mesh.msh", grid);
+    mtet::save_mesh("tet_grid.msh", grid);
     mtet::save_mesh("active_tets.msh", grid, std::span<mtet::TetId>(activeTetId));
-    return 1;
+    return true;
 }

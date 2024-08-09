@@ -7,12 +7,12 @@
 #pragma once
 
 #include <chrono>
-#include <iostream>
-//#include "adaptive_grid_gen.h"
 
+///The current amount in time profiling.
 const int timer_amount = 10;
 
 /// The labels for timing stats.
+/// an array of 10 timings: {total time getting the multiple indices, total time,time spent on single function, time spent on double functions, time spent on triple functions time spent on double functions' zero crossing test, time spent on three functions' zero crossing test, total subdivision time, total evaluation time,total splitting time}
 const std::array<std::string, timer_amount> time_label = {"total time: ",
     "get active multiples: ",
     "single func: ",

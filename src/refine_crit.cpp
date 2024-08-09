@@ -7,95 +7,18 @@
 
 #include "refine_crit.h"
 
-//using namespace std;
-
-bool curve_network = false;
-//llvm_vecsmall::SmallVector<csg_unit, 20> GLOBAL_CSGTREE = {};
-
-/// Below are the variable/constant/function definitions that will only be used in `subdivide_multi.cpp`
-///
+/// Below are the variable definitions that will only be used in `refine_crit.cpp`
 ///
 /// Stores the index of permutations of n less than `funcNum` for the use in `subTet` and `subMI` functions.
-///
 llvm_vecsmall::SmallVector<llvm_vecsmall::SmallVector<llvm_vecsmall::SmallVector<std::array<int, 4>, 100>, 3>, 20> multiple_indices;
 
+///Stores the 2d and 3d origin for the convex hull check happened in zero-crossing criteria.
 std::array<double, 2> query_2d = {0.0, 0.0}; // X, Y
 std::array<double, 3> query_3d = {0.0, 0.0, 0.0}; // X, Y, Z
 
-/// Below are the local functions servicing `subTet` and `subMI`
+/// Below are the local functions servicing `critIA` , `critCSG`, and `critMI`
 
-/// returns a `bool` value that `true` represents positive and `false` represents negative of the input value `x`.
-bool get_sign(double x) {
-    return (x > 0) ? 1 : 0;
-}
-
-/// returns the dot product of input arrays `a` and `b`.
-double dot(const std::array<double, 3> &a, const std::array<double, 3> &b) {
-    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-}
-
-/// returns a vector in space by subtracting a 3D coordinate `p2` from `p1`.
-std::array<double, 3> getVec(const std::array<double, 3> &p1, const std::array<double, 3> &p2){
-    return {p1[0] - p2[0], p1[1] - p2[1], p1[2] - p2[2]};
-}
-
-/// returns a vector in space by subtracting a 3D coordinate `p2` from `p1`. Output is in Eigen vector.
-Eigen::Vector3d getEigenVec(const std::array<double, 3> &p1, const std::array<double, 3> &p2){
-    return Eigen::Vector3d(p1[0] - p2[0], p1[1] - p2[1], p1[2] - p2[2]);
-}
-
-/// transforms the input of errors at 20 bezier control points for two functions into the correct format that `convex_hull_membership` library can use.
-std::array<double, 40> parse_convex_points2d(const Eigen::Matrix<double, 2, 20> valList) {
-    std::array<double, 40> transposed;
-    Eigen::MatrixXd::Map(transposed.data(), 1, 40) = valList.transpose();
-    return transposed;
-}
-
-/// transforms the input of errors at 20 bezier control points for three functions into the correct format that `convex_hull_membership` library can use.
-std::array<double, 60> parse_convex_points3d(const Eigen::Matrix<double, 3, 20> valList) {
-    std::array<double, 60> transposed;
-    Eigen::MatrixXd::Map(transposed.data(), 1, 60) = valList.transpose();
-    return transposed;
-}
-
-Eigen::Vector<double, 20> bezierConstruct(const double v0,
-                                       const double v1,
-                                       const double v2,
-                                       const double v3,
-                                       const std::array<double, 3> g0,
-                                       const std::array<double, 3> g1,
-                                       const std::array<double, 3> g2,
-                                       const std::array<double, 3> g3,
-                                       const std::array<double, 3> vec1,
-                                       const std::array<double, 3> vec2,
-                                       const std::array<double, 3> vec3,
-                                       const std::array<double, 3> vec4,
-                                       const std::array<double, 3> vec5,
-                                       const std::array<double, 3> vec6) {
-    std::array<double, 3> v0s, v1s, v2s, v3s;
-    v0s = {v0 + dot(g0, vec1) / 3, v0 + dot(g0, vec2) / 3, v0 + dot(g0, vec3) / 3};
-    v1s = {v1 + dot(g1, vec4) / 3, v1 + dot(g1, vec5) / 3, v1 - dot(g1, vec1) / 3};
-    v2s = {v2 + dot(g2, vec6) / 3, v2 - dot(g2, vec2) / 3, v2 - dot(g2, vec4) / 3};
-    v3s = {v3 - dot(g3, vec3) / 3, v3 - dot(g3, vec5) / 3, v3 - dot(g3, vec6) / 3};
-    double vMid0 = (9 * (v1s[0] + v1s[1] + v2s[0] + v2s[2] + v3s[1] + v3s[2]) / 6 - v1 - v2 - v3)/ 6;
-    //double e1 = (v0s[1] + v0s[2] + v2s[0] + v2s[1] + v3s[0] + v3s[2]) / 6;
-    double vMid1 =(9 * (v0s[1] + v0s[2] + v2s[0] + v2s[1] + v3s[0] + v3s[2]) / 6 - v0 - v2 - v3)/ 6;
-    //double e2 = (v0s[0] + v0s[2] + v1s[1] + v1s[2] + v3s[0] + v3s[1]) / 6;
-    double vMid2 =(9 * (v0s[0] + v0s[2] + v1s[1] + v1s[2] + v3s[0] + v3s[1]) / 6 - v0 - v1 - v3)/ 6;
-    //double e3 = (v0s[0] + v0s[1] + v1s[0] + v1s[2] + v2s[1] + v2s[2]) / 6;
-    double vMid3 =(9 * (v0s[0] + v0s[1] + v1s[0] + v1s[2] + v2s[1] + v2s[2]) / 6 - v0 - v1 - v2)/ 6;
-    return Eigen::Vector<double, 20> {v0, v1, v2, v3, v0s[0], v0s[1], v0s[2], v1s[0], v1s[1], v1s[2], v2s[0], v2s[1], v2s[2],
-        v3s[0], v3s[1], v3s[2], vMid0, vMid1, vMid2, vMid3};
-}
-
-Eigen::Vector<double, 16> bezierDiff(const Eigen::Vector<double,20> valList)
-{
-    /// Constant coefficient to obtain linear interpolated values at each bezier control points
-    const Eigen::Matrix<double, 16, 4> linear_coeff {{2, 1, 0, 0}, {2, 0, 1, 0}, {2, 0, 0, 1}, {0, 2, 1, 0},{0, 2, 0, 1}, {1, 2, 0, 0}, {0, 0, 2, 1}, {1, 0, 2, 0},{0, 1, 2, 0}, {1, 0, 0, 2}, {0, 1, 0, 2}, {0, 0, 1, 2},{0, 1, 1, 1}, {1, 0, 1, 1}, {1, 1, 0, 1}, {1, 1, 1, 0}};
-    Eigen::Vector<double, 16> linear_val = (linear_coeff * valList.head(4)) / 3;
-    return valList.tail(16) - linear_val;
-}
-
+/// Stores the index of permutations of n less than or equal to `funcNum`.
 void init_multi(const size_t funcNum,
                 const int mode)
 {
@@ -137,8 +60,88 @@ void init_multi(const size_t funcNum,
     }
 }
 
+/// returns a `bool` value that `true` represents positive and `false` represents negative of the input value `x`.
+bool get_sign(double x) {
+    return (x > 0) ? 1 : 0;
+}
+
+/// Construct the values of one function at the bezier control points within a tet.
+///
+/// @param[in] vals         The function values at four tet vertices
+/// @param[in] grads            The total derivative of the functions in x, y, z direction at four tet vertices.
+/// @param[in] vec          sampled vectors using four tet vertices. Given tet vertices as p0, p1, p2, p3. These 6 vectors are p1 - p0, p2 - p0, p3 - p0, p2 - p1, p3 - p1, p3 - p2.
+///
+/// @return         The eigen vector of 20 bezier values.
+Eigen::Vector<double, 20> bezierConstruct(const Eigen::RowVector4d vals,
+                                                const Eigen::Matrix<double, 4, 3> grads,
+                                                const Eigen::Matrix<double, 3, 6> vec)
+{
+    Eigen::RowVector3d v0s, v1s, v2s, v3s;
+    v0s = grads.row(0) * vec(Eigen::all, {0, 1, 2}) / 3;
+    v0s.array() += vals(0);
+    v1s =  grads.row(1) * vec(Eigen::all, {3, 4, 0}) / 3;
+    v1s = v1s.asDiagonal() * Eigen::Vector3d({1, 1, -1});
+    v1s.array() += vals(1);
+    v2s = grads.row(2) * vec(Eigen::all, {5, 1, 3}) / 3;
+    v2s = v2s.asDiagonal() * Eigen::Vector3d({1, -1, -1});
+    v2s.array() += vals(2);
+    v3s = grads.row(3) * vec(Eigen::all, {2, 4, 5}) / 3;
+    v3s *= -1;
+    v3s.array() += vals(3);
+    
+    
+    double vMid0 = (9 * (v1s(0) + v1s(1) + v2s(0) + v2s(2) + v3s(1) + v3s(2)) / 6 - vals(1) - vals(2) - vals(3))/ 6;
+    double vMid1 =(9 * (v0s[1] + v0s[2] + v2s[0] + v2s[1] + v3s[0] + v3s[2]) / 6 - vals(0) - vals(2) - vals(3))/ 6;
+    double vMid2 =(9 * (v0s[0] + v0s[2] + v1s[1] + v1s[2] + v3s[0] + v3s[1]) / 6 - vals(0) - vals(1) - vals(3))/ 6;
+    double vMid3 =(9 * (v0s[0] + v0s[1] + v1s[0] + v1s[2] + v2s[1] + v2s[2]) / 6 - vals(0) - vals(1) - vals(2))/ 6;
+    Eigen::RowVector<double, 20> valList;
+    valList << vals, v0s, v1s, v2s, v3s, vMid0, vMid1, vMid2, vMid3;
+    return valList;
+}
+
+/// Construct the value differences between linear interpolations and bezier approximations at 16 bezier control points (excluding control points at tet vertices)
+/// @param[in] valList          The eigen vector of 20 bezier values.
+///
+/// @return         The value differences at 16 control points.
+Eigen::Vector<double, 16> bezierDiff(const Eigen::Vector<double,20> valList)
+{
+    /// Constant coefficient to obtain linear interpolated values at each bezier control points
+    const Eigen::Matrix<double, 16, 4> linear_coeff {{2, 1, 0, 0}, {2, 0, 1, 0}, {2, 0, 0, 1}, {0, 2, 1, 0},{0, 2, 0, 1}, {1, 2, 0, 0}, {0, 0, 2, 1}, {1, 0, 2, 0},{0, 1, 2, 0}, {1, 0, 0, 2}, {0, 1, 0, 2}, {0, 0, 1, 2},{0, 1, 1, 1}, {1, 0, 1, 1}, {1, 1, 0, 1}, {1, 1, 1, 0}};
+    Eigen::Vector<double, 16> linear_val = (linear_coeff * valList.head(4)) / 3;
+    return valList.tail(16) - linear_val;
+}
+
+/// The check whether the two functions' intersection curve lies in the tet.
+/// Transforms values at 20 bezier control points for two functions into the correct format that `convex_hull_membership` library can use.
+/// @param[in] valList          The eigen vector of 20 bezier values.
+///
+/// @return A array that convexhull memship library can use.
+std::array<double, 40> parse_convex_points2d(const Eigen::Matrix<double, 2, 20> valList) {
+    std::array<double, 40> transposed;
+    Eigen::MatrixXd::Map(transposed.data(), 1, 40) = valList.transpose();
+    return transposed;
+}
+
+/// The check whether the three functions' intersection point lies in the tet.
+/// Transforms values at 20 bezier control points for three functions into the correct format that `convex_hull_membership` library can use.
+/// @param[in] valList          The eigen vector of 20 bezier values.
+///
+/// @return A array that convexhull memship library can use.
+std::array<double, 60> parse_convex_points3d(const Eigen::Matrix<double, 3, 20> valList) {
+    std::array<double, 60> transposed;
+    Eigen::MatrixXd::Map(transposed.data(), 1, 60) = valList.transpose();
+    return transposed;
+}
+
+/// Given two functions, here is the check whether the two functions' intersection curve can be well approximated by linear interpolation.
+/// @param[in] grad         The linear interpolations' gradients of these two functions within the tet.
+/// @param[in] diff_matrix          The difference between linear interpolations and bezier approximations at 16 bezier control points (excluding control points at tet vertices) for these two functions
+/// @param[in] sqD          The squared determinant to offset the un-normalized gradients
+/// @param[in] threshold            The user-defined error threshold
+///
+/// @return         Whether the tet passes the check for these two functions.
 bool two_func_check (Eigen::Matrix<double, 2, 3> grad,
-                     const Eigen::Matrix<double, 16, 2> grad_matrix,
+                     const Eigen::Matrix<double, 16, 2> diff_matrix,
                      const double sqD,
                      const double threshold)
 {
@@ -149,13 +152,20 @@ bool two_func_check (Eigen::Matrix<double, 2, 3> grad,
     Eigen::Matrix<double, 2, 3> H = Eigen::Matrix2d({{w(1, 1), -w(1, 0)}, {-w(0, 1), w(0,0)}}) * grad;
     
     //find the largest max error (max squared gamma: the LHS of the equation) among all 16 bezier control points
-    Eigen::Matrix<double, 16, 3> unNormDis = grad_matrix * H;
+    Eigen::Matrix<double, 16, 3> unNormDis = diff_matrix * H;
     Eigen::Vector<double, 16> dotProducts = sqD * unNormDis.cwiseProduct(unNormDis).rowwise().sum();
     return (dotProducts.maxCoeff() > threshold*threshold * E * E);
 }
 
+/// Given two functions, here is the check whether the three functions' intersection curve can be well approximated by linear interpolation.
+/// @param[in] grad         The linear interpolations' gradients of these three functions within the tet.
+/// @param[in] diff_matrix          The difference between linear interpolations and bezier approximations at 16 bezier control points (excluding control points at tet vertices) for these two functions
+/// @param[in] sqD          The squared determinant to offset the un-normalized gradients
+/// @param[in] threshold            The user-defined error threshold
+///
+/// @return         Whether the tet passes the check for these three functions.
 bool three_func_check (Eigen::Matrix<double, 3, 3> grad,
-                     const Eigen::Matrix<double, 16, 3> grad_matrix,
+                     const Eigen::Matrix<double, 16, 3> diff_matrix,
                      const double sqD,
                      const double threshold)
 {
@@ -164,34 +174,30 @@ bool three_func_check (Eigen::Matrix<double, 3, 3> grad,
     H << grad.row(1).cross(grad.row(2)),
     grad.row(2).cross(grad.row(0)),
     grad.row(0).cross(grad.row(1));
-    Eigen::Matrix<double, 16, 3> unNormDis_eigen = grad_matrix * H;
+    Eigen::Matrix<double, 16, 3> unNormDis_eigen = diff_matrix * H;
     Eigen::Vector<double, 16> dotProducts = sqD * unNormDis_eigen.cwiseProduct(unNormDis_eigen).rowwise().sum();
     //double maxGammaSq = dotProducts.maxCoeff();
     return (dotProducts.maxCoeff() > threshold*threshold * E * E);
 }
 
 bool critIA(
-            const std::array<std::array<double, 3>,4> &pts,
-            const llvm_vecsmall::SmallVector<std::array<double,4>, 20> &vals,
-            const llvm_vecsmall::SmallVector<std::array<std::array<double, 3>,4>, 20> &grads,
+            const Eigen::Matrix<double, 4, 3> &pts,
+            const std::array<llvm_vecsmall::SmallVector<Eigen::RowVector4d, 20>,4> tet_info,
+            const size_t funcNum,
             const double threshold,
+            const bool curve_network,
             bool& active,
             int &sub_call_two,
             int &sub_call_three)
 {
-    std::array<double, 3> p0 = pts[0], p1 = pts[1], p2 = pts[2], p3 = pts[3];
-    std::array<double, 3> vec1 = getVec(p1, p0), vec2 = getVec(p2, p0), vec3 = getVec(p3, p0),
-    vec4 = getVec(p2, p1), vec5 = getVec(p3, p1), vec6 = getVec(p3, p2);
-    const size_t funcNum = vals.size();
-    
     Eigen::Matrix<double, Eigen::Dynamic, 20> valList (funcNum, 20);
     Eigen::Matrix<double, Eigen::Dynamic, 16> diffList(funcNum, 16);
-    llvm_vecsmall::SmallVector<bool, 20> activeTF;
+    llvm_vecsmall::SmallVector<bool, 20> activeTF(funcNum);
     Eigen::Matrix<double, 20, 3> gradList;
-    Eigen::Vector3d eigenVec1 = getEigenVec(p1, p0), eigenVec2 = getEigenVec(p2, p0), eigenVec3 = getEigenVec(p3, p0);
-    Eigen::Matrix3d vec;
-    vec << eigenVec1, eigenVec2, eigenVec3;
-    double D = vec.determinant();
+    Eigen::Vector3d eigenVec1 = pts.row(1) - pts.row(0), eigenVec2 = pts.row(2) - pts.row(0), eigenVec3 = pts.row(3) - pts.row(0), eigenVec4 = pts.row(2) - pts.row(1), eigenVec5 = pts.row(3) - pts.row(1), eigenVec6 = pts.row(3) - pts.row(2);
+    Eigen::Matrix<double, 3, 6> vec;
+    vec << eigenVec1, eigenVec2, eigenVec3, eigenVec4, eigenVec5, eigenVec6;
+    double D = vec.leftCols(3).determinant();
     double sqD = D*D;
     Eigen::Matrix3d crossMatrix;
     crossMatrix << eigenVec2.cross(eigenVec3), eigenVec3.cross(eigenVec1), eigenVec1.cross(eigenVec2);
@@ -200,10 +206,12 @@ bool critIA(
     //single function linearity check:
     for (int funcIter = 0; funcIter < funcNum; funcIter++){
         //Timer single_timer(singleFunc, [&](auto profileResult){profileTimer = combine_timer(profileTimer, profileResult);});
-        double v0 = vals[funcIter][0], v1 = vals[funcIter][1], v2 = vals[funcIter][2], v3 = vals[funcIter][3];
-        std::array<double, 3> g0 = grads[funcIter][0], g1 = grads[funcIter][1], g2 = grads[funcIter][2], g3 = grads[funcIter][3];
-       //storing bezier and linear info for later linearity comparison
-        valList.row(funcIter) = bezierConstruct(v0, v1, v2, v3, g0, g1, g2, g3, vec1, vec2, vec3, vec4, vec5, vec6);
+        //storing bezier and linear info for later linearity comparison
+        Eigen::Matrix4d func_info;
+        func_info << tet_info[0][funcIter], tet_info[1][funcIter], tet_info[2][funcIter], tet_info[3][funcIter];
+        Eigen::RowVector4d vals = func_info.col(0);
+        Eigen::Matrix<double, 4, 3> grads_eigen = func_info.rightCols(3);
+        valList.row(funcIter) = bezierConstruct(vals, grads_eigen, vec);
         //Timer single_timer(singleFunc, [&](auto profileResult){profileTimer = combine_timer(profileTimer, profileResult);});
         activeTF[funcIter] = get_sign(valList.row(funcIter).maxCoeff()) != get_sign(valList.row(funcIter).minCoeff());
         //single_timer.Stop();
@@ -212,7 +220,7 @@ bool critIA(
                 active = true;
             }
             activeNum++;
-            Eigen::Vector3d unNormF = Eigen::RowVector3d(v1-v0, v2-v0, v3-v0) * crossMatrix.transpose();
+            Eigen::Vector3d unNormF = Eigen::RowVector3d(vals(1)-vals(0), vals(2)-vals(0), vals(3)-vals(0)) * crossMatrix.transpose();
             gradList.row(funcIter) = unNormF;
             diffList.row(funcIter) = bezierDiff(valList.row(funcIter));
             double error = std::max(diffList.row(funcIter).maxCoeff(), -diffList.row(funcIter).minCoeff());
@@ -267,9 +275,9 @@ bool critIA(
                 zeroXResult[pairIndices[0]][pairIndices[1]] = true;
                 zeroXResult[pairIndices[1]][pairIndices[0]] = true;
                 Eigen::Matrix<double, 2, 3> grad = gradList(pairIndices, Eigen::all);
-                Eigen::Matrix<double, 16, 2> grad_matrix = diffList(pairIndices, Eigen::all).transpose();
+                Eigen::Matrix<double, 16, 2> diff_matrix = diffList(pairIndices, Eigen::all).transpose();
                 // two function linearity test:
-                if (two_func_check (grad, grad_matrix, sqD, threshold)){
+                if (two_func_check (grad, diff_matrix, sqD, threshold)){
                     //timer.Stop();
                     return true;
                 }
@@ -279,6 +287,7 @@ bool critIA(
     }
     if(activeDouble_count < 3)
         return false;
+    // 3-function checks
     {
         //Timer timer(threeFunc, [&](auto profileResult){profileTimer = combine_timer(profileTimer, profileResult);});
         bool zeroX;
@@ -294,8 +303,8 @@ bool critIA(
 
             if (zeroX){
                 Eigen::Matrix<double, 3, 3> grad = gradList(tripleIndices, Eigen::all);
-                Eigen::Matrix<double, 16, 3> grad_matrix = diffList(tripleIndices, Eigen::all).transpose();
-                if (three_func_check (grad, grad_matrix, sqD, threshold)){
+                Eigen::Matrix<double, 16, 3> diff_matrix = diffList(tripleIndices, Eigen::all).transpose();
+                if (three_func_check (grad, diff_matrix, sqD, threshold)){
                     //timer.Stop();
                     return true;
                 }
@@ -307,28 +316,25 @@ bool critIA(
 }
 
 bool critCSG(
-            const std::array<std::array<double, 3>,4> &pts,
-            const llvm_vecsmall::SmallVector<std::array<double,4>, 20> &vals,
-            const llvm_vecsmall::SmallVector<std::array<std::array<double, 3>,4>, 20> &grads,const std::function<std::pair<std::array<double, 2>, llvm_vecsmall::SmallVector<int, 20>>(llvm_vecsmall::SmallVector<std::array<double, 2>, 20>)> csg_func,
-            const double threshold,
-            bool& active,
-            int &sub_call_two,
-            int &sub_call_three)
+             const Eigen::Matrix<double, 4, 3> &pts,
+             const std::array<llvm_vecsmall::SmallVector<Eigen::RowVector4d, 20>,4> tet_info,
+             const size_t funcNum,
+             const std::function<std::pair<std::array<double, 2>, llvm_vecsmall::SmallVector<int, 20>>(llvm_vecsmall::SmallVector<std::array<double, 2>, 20>)> csg_func,
+             const double threshold,
+             const bool curve_network,
+             bool& active,
+             int &sub_call_two,
+             int &sub_call_three)
 {
-    std::array<double, 3> p0 = pts[0], p1 = pts[1], p2 = pts[2], p3 = pts[3];
-    std::array<double, 3> vec1 = getVec(p1, p0), vec2 = getVec(p2, p0), vec3 = getVec(p3, p0),
-    vec4 = getVec(p2, p1), vec5 = getVec(p3, p1), vec6 = getVec(p3, p2);
-    const size_t funcNum = vals.size();
-    
     Eigen::Matrix<double, Eigen::Dynamic, 20> valList (funcNum, 20);
     Eigen::Matrix<double, Eigen::Dynamic, 16> diffList(funcNum, 16);
-    llvm_vecsmall::SmallVector<bool, 20> activeTF;
+    llvm_vecsmall::SmallVector<bool, 20> activeTF(funcNum);
     llvm_vecsmall::SmallVector<std::array<double , 2>, 20> funcInt(funcNum);
     Eigen::Matrix<double, 20, 3> gradList;
-    Eigen::Vector3d eigenVec1 = getEigenVec(p1, p0), eigenVec2 = getEigenVec(p2, p0), eigenVec3 = getEigenVec(p3, p0);
-    Eigen::Matrix3d vec;
-    vec << eigenVec1, eigenVec2, eigenVec3;
-    double D = vec.determinant();
+    Eigen::Vector3d eigenVec1 = pts.row(1) - pts.row(0), eigenVec2 = pts.row(2) - pts.row(0), eigenVec3 = pts.row(3) - pts.row(0), eigenVec4 = pts.row(2) - pts.row(1), eigenVec5 = pts.row(3) - pts.row(1), eigenVec6 = pts.row(3) - pts.row(2);
+    Eigen::Matrix<double, 3, 6> vec;
+    vec << eigenVec1, eigenVec2, eigenVec3, eigenVec4, eigenVec5, eigenVec6;
+    double D = vec.leftCols(3).determinant();
     double sqD = D*D;
     Eigen::Matrix3d crossMatrix;
     crossMatrix << eigenVec2.cross(eigenVec3), eigenVec3.cross(eigenVec1), eigenVec1.cross(eigenVec2);
@@ -337,10 +343,11 @@ bool critCSG(
     //single function linearity check:
     for (int funcIter = 0; funcIter < funcNum; funcIter++){
         //Timer single_timer(singleFunc, [&](auto profileResult){profileTimer = combine_timer(profileTimer, profileResult);});
-        double v0 = vals[funcIter][0], v1 = vals[funcIter][1], v2 = vals[funcIter][2], v3 = vals[funcIter][3];
-        std::array<double, 3> g0 = grads[funcIter][0], g1 = grads[funcIter][1], g2 = grads[funcIter][2], g3 = grads[funcIter][3];
-       //storing bezier and linear info for later linearity comparison
-        valList.row(funcIter) = bezierConstruct(v0, v1, v2, v3, g0, g1, g2, g3, vec1, vec2, vec3, vec4, vec5, vec6);
+        Eigen::Matrix4d func_info;
+        func_info << tet_info[0][funcIter], tet_info[1][funcIter], tet_info[2][funcIter], tet_info[3][funcIter];
+        Eigen::RowVector4d vals = func_info.col(0);
+        Eigen::Matrix<double, 4, 3> grads_eigen = func_info.rightCols(3);
+        valList.row(funcIter) = bezierConstruct(vals, grads_eigen, vec);
         funcInt[funcIter] = {valList.row(funcIter).minCoeff(), valList.row(funcIter).maxCoeff()};
     }
     
@@ -357,7 +364,7 @@ bool critCSG(
                         active = true;
                     }
                     activeNum++;
-                    double v0 = vals[funcIter][0], v1 = vals[funcIter][1], v2 = vals[funcIter][2], v3 = vals[funcIter][3];
+                    double v0 = tet_info[0][funcIter][0], v1 = tet_info[1][funcIter][0], v2 = tet_info[2][funcIter][0], v3 = tet_info[3][funcIter][0];
                     Eigen::Vector3d unNormF = Eigen::RowVector3d(v1-v0, v2-v0, v3-v0) * crossMatrix.transpose();
                     gradList.row(funcIter) = unNormF;
                     diffList.row(funcIter) = bezierDiff(valList.row(funcIter));
@@ -414,9 +421,9 @@ bool critCSG(
                 zeroXResult[pairIndices[0]][pairIndices[1]] = true;
                 zeroXResult[pairIndices[1]][pairIndices[0]] = true;
                 Eigen::Matrix<double, 2, 3> grad = gradList(pairIndices, Eigen::all);
-                Eigen::Matrix<double, 16, 2> grad_matrix = diffList(pairIndices, Eigen::all).transpose();
+                Eigen::Matrix<double, 16, 2> diff_matrix = diffList(pairIndices, Eigen::all).transpose();
                 // two function linearity test:
-                if (two_func_check (grad, grad_matrix, sqD, threshold)){
+                if (two_func_check (grad, diff_matrix, sqD, threshold)){
                     //timer.Stop();
                     return true;
                 }
@@ -426,6 +433,7 @@ bool critCSG(
     }
     if(activeDouble_count < 3)
         return false;
+    // 3-function checks
     {
         //Timer timer(threeFunc, [&](auto profileResult){profileTimer = combine_timer(profileTimer, profileResult);});
         bool zeroX;
@@ -441,8 +449,8 @@ bool critCSG(
 
             if (zeroX){
                 Eigen::Matrix<double, 3, 3> grad = gradList(tripleIndices, Eigen::all);
-                Eigen::Matrix<double, 16, 3> grad_matrix = diffList(tripleIndices, Eigen::all).transpose();
-                if (three_func_check (grad, grad_matrix, sqD, threshold)){
+                Eigen::Matrix<double, 16, 3> diff_matrix = diffList(tripleIndices, Eigen::all).transpose();
+                if (three_func_check (grad, diff_matrix, sqD, threshold)){
                     //timer.Stop();
                     return true;
                 }
@@ -453,29 +461,24 @@ bool critCSG(
     return false;
 }
 bool critMI(
-           const std::array<std::array<double, 3>,4> &pts,
-           const llvm_vecsmall::SmallVector<std::array<double,4>, 20> &vals,
-           const llvm_vecsmall::SmallVector<std::array<std::array<double, 3>,4>, 20> &grads, 
-           const double threshold,
-           bool& active,
-           int &sub_call_two,
-           int &sub_call_three)
+            const Eigen::Matrix<double, 4, 3> &pts,
+            const std::array<llvm_vecsmall::SmallVector<Eigen::RowVector4d, 20>,4> tet_info,
+            const size_t funcNum,
+            const double threshold,
+            const bool curve_network,
+            bool& active,
+            int &sub_call_two,
+            int &sub_call_three)
 {
-    std::array<double, 3> p0 = pts[0], p1 = pts[1], p2 = pts[2], p3 = pts[3];
-    std::array<double, 3> vec1 = getVec(p1, p0), vec2 = getVec(p2, p0), vec3 = getVec(p3, p0),
-    vec4 = getVec(p2, p1), vec5 = getVec(p3, p1), vec6 = getVec(p3, p2);
-    
-    
-    Eigen::Vector3d eigenVec1 = getEigenVec(p1, p0), eigenVec2 = getEigenVec(p2, p0), eigenVec3 = getEigenVec(p3, p0);
-    Eigen::Matrix3d vec;
-    vec << eigenVec1, eigenVec2, eigenVec3;
-    double D = vec.determinant();
+    Eigen::Vector3d eigenVec1 = pts.row(1) - pts.row(0), eigenVec2 = pts.row(2) - pts.row(0), eigenVec3 = pts.row(3) - pts.row(0), eigenVec4 = pts.row(2) - pts.row(1), eigenVec5 = pts.row(3) - pts.row(1), eigenVec6 = pts.row(3) - pts.row(2);
+    Eigen::Matrix<double, 3, 6> vec;
+    vec << eigenVec1, eigenVec2, eigenVec3, eigenVec4, eigenVec5, eigenVec6;
+    double D = vec.leftCols(3).determinant();
     double sqD = D*D;
-    const size_t funcNum = vals.size();
     Eigen::Matrix3d crossMatrix_eigen;
     crossMatrix_eigen << eigenVec2.cross(eigenVec3), eigenVec3.cross(eigenVec1), eigenVec1.cross(eigenVec2);
     Eigen::Matrix<double, 20, 3> gradList_eigen;
-    Eigen::Matrix<double, Eigen::Dynamic, 20> valList_eigen (funcNum, 20);
+    Eigen::Matrix<double, Eigen::Dynamic, 20> valList (funcNum, 20);
     Eigen::Matrix<double, Eigen::Dynamic, 16> diffList(funcNum, 16);
     
     llvm_vecsmall::SmallVector<bool, 20> activeList(funcNum);
@@ -484,12 +487,12 @@ bool critMI(
     llvm_vecsmall::SmallVector<llvm_vecsmall::SmallVector<bool, 20>, 20> activePair(funcNum, llvm_vecsmall::SmallVector<bool, 20>(false, funcNum));
     //single function linearity check:
     for (int funcIter = 0; funcIter < funcNum; funcIter++){
-        double v0 = vals[funcIter][0], v1 = vals[funcIter][1], v2 = vals[funcIter][2], v3 = vals[funcIter][3];
-        std::array<double, 3> g0 = grads[funcIter][0], g1 = grads[funcIter][1], g2 = grads[funcIter][2], g3 = grads[funcIter][3];
-        // Bezier control points
-        valList_eigen.row(funcIter) = bezierConstruct(v0, v1, v2, v3, g0, g1, g2, g3, vec1, vec2, vec3, vec4, vec5, vec6);
-        funcInt[funcIter] = {valList_eigen.row(funcIter).minCoeff(), valList_eigen.row(funcIter).maxCoeff()};
-        //cout << funcInt[funcIter][0] << " " << funcInt[funcIter][1] << endl;
+        Eigen::Matrix4d func_info;
+        func_info << tet_info[0][funcIter], tet_info[1][funcIter], tet_info[2][funcIter], tet_info[3][funcIter];
+        Eigen::RowVector4d vals = func_info.col(0);
+        Eigen::Matrix<double, 4, 3> grads_eigen = func_info.rightCols(3);
+        valList.row(funcIter) = bezierConstruct(vals, grads_eigen, vec);
+        funcInt[funcIter] = {valList.row(funcIter).minCoeff(), valList.row(funcIter).maxCoeff()};
         if (maxLow < funcInt[funcIter][0]){
             maxLow = funcInt[funcIter][0];
         }
@@ -515,7 +518,7 @@ bool critMI(
         int funcIndex1 = pairIndices[0];
         int funcIndex2 = pairIndices[1];
         Eigen::Vector<double, 20> diff_at_point;
-        diff_at_point = valList_eigen.row(funcIndex2) - valList_eigen.row(funcIndex1);
+        diff_at_point = valList.row(funcIndex2) - valList.row(funcIndex1);
         bool activeTF = get_sign(diff_at_point.maxCoeff()) == get_sign(diff_at_point.minCoeff()) ? false : true;
         //single_timer.Stop();
         if (activeTF){
@@ -526,18 +529,18 @@ bool critMI(
             activePair[pairIndices[1]][pairIndices[0]] = true;
             if (!activeList[funcIndex1]){
                 activeList[funcIndex1] = true;
-                double v0 = valList_eigen(funcIndex1, 0), v1 = valList_eigen(funcIndex1, 1), v2 = valList_eigen(funcIndex1, 2), v3 = valList_eigen(funcIndex1, 3);
+                double v0 = valList(funcIndex1, 0), v1 = valList(funcIndex1, 1), v2 = valList(funcIndex1, 2), v3 = valList(funcIndex1, 3);
                 Eigen::Vector3d unNormF_eigen = Eigen::RowVector3d(v1-v0, v2-v0, v3-v0) * crossMatrix_eigen.transpose();
                 gradList_eigen.row(funcIndex1) = unNormF_eigen;
                 
-                diffList.row(funcIndex1) = bezierDiff(valList_eigen.row(funcIndex1));
+                diffList.row(funcIndex1) = bezierDiff(valList.row(funcIndex1));
             }
             if (!activeList[funcIndex2]){
                 activeList[funcIndex2] = true;
-                double v0 = valList_eigen(funcIndex2, 0), v1 = valList_eigen(funcIndex2, 1), v2 = valList_eigen(funcIndex2, 2), v3 = valList_eigen(funcIndex2, 3);
+                double v0 = valList(funcIndex2, 0), v1 = valList(funcIndex2, 1), v2 = valList(funcIndex2, 2), v3 = valList(funcIndex2, 3);
                 Eigen::Vector3d unNormF_eigen = Eigen::RowVector3d(v1-v0, v2-v0, v3-v0) * crossMatrix_eigen.transpose();
                 gradList_eigen.row(funcIndex2) = unNormF_eigen;
-                diffList.row(funcIndex2) = bezierDiff(valList_eigen.row(funcIndex2));
+                diffList.row(funcIndex2) = bezierDiff(valList.row(funcIndex2));
 
             }
             Eigen::Vector<double, 16> diff_twofunc;
@@ -574,9 +577,9 @@ bool critMI(
             int funcIndex3 = activeFunc[multiples[1][tripleIter][2]];
             if(!(activePair[funcIndex1][funcIndex2]&&activePair[funcIndex1][funcIndex3]&&activePair[funcIndex2][funcIndex3]))
                 continue;
-            Eigen::Matrix<double,Eigen::Dynamic, 20> diff_mi(2, 20);
-            diff_mi.row(0) = valList_eigen.row(funcIndex1) - valList_eigen.row(funcIndex2);
-            diff_mi.row(1) =  valList_eigen.row(funcIndex2) - valList_eigen.row(funcIndex3);
+            Eigen::Matrix<double,2, 20> diff_mi(2, 20);
+            diff_mi.row(0) = valList.row(funcIndex1) - valList.row(funcIndex2);
+            diff_mi.row(1) =  valList.row(funcIndex2) - valList.row(funcIndex3);
             std::array<double, 40> nPoints = parse_convex_points2d(diff_mi);
             //Timer sub_timer(sub_twoFunc, [&](auto profileResult){profileTimer = combine_timer(profileTimer, profileResult);});
             zeroX = convex_hull_membership::contains<2, double>(nPoints, query_2d);
@@ -587,10 +590,10 @@ bool critMI(
                 Eigen::Matrix<double, 2, 3> grad(2, 3);
                 grad.row(0) = gradList_eigen.row(funcIndex1) - gradList_eigen.row(funcIndex2);
                 grad.row(1) = gradList_eigen.row(funcIndex2) - gradList_eigen.row(funcIndex3);
-                Eigen::Matrix<double, 2, 16> grad_matrix(2, 16);
-                grad_matrix.row(0) = diffList.row(funcIndex1) - diffList.row(funcIndex2);
-                grad_matrix.row(1) = diffList.row(funcIndex2) - diffList.row(funcIndex3);
-                if (two_func_check (grad, grad_matrix.transpose(), sqD, threshold)){
+                Eigen::Matrix<double, 2, 16> diff_matrix(2, 16);
+                diff_matrix.row(0) = diffList.row(funcIndex1) - diffList.row(funcIndex2);
+                diff_matrix.row(1) = diffList.row(funcIndex2) - diffList.row(funcIndex3);
+                if (two_func_check (grad, diff_matrix.transpose(), sqD, threshold)){
                     //timer.Stop();
                     return true;
                 }
@@ -612,10 +615,10 @@ bool critMI(
             if(!(activePair[funcIndex1][funcIndex2]&&activePair[funcIndex1][funcIndex3]&&activePair[funcIndex1][funcIndex4]&&activePair[funcIndex2][funcIndex3]&&activePair[funcIndex2][funcIndex4]&&activePair[funcIndex3][funcIndex4]))
                 continue;
             
-            Eigen::Matrix<double,Eigen::Dynamic, 20> diff_mi(3, 20);
-            diff_mi.row(0) = valList_eigen.row(funcIndex1) - valList_eigen.row(funcIndex2);
-            diff_mi.row(1) =  valList_eigen.row(funcIndex2) - valList_eigen.row(funcIndex3);
-            diff_mi.row(2) =  valList_eigen.row(funcIndex3) - valList_eigen.row(funcIndex4);
+            Eigen::Matrix<double,3, 20> diff_mi(3, 20);
+            diff_mi.row(0) = valList.row(funcIndex1) - valList.row(funcIndex2);
+            diff_mi.row(1) =  valList.row(funcIndex2) - valList.row(funcIndex3);
+            diff_mi.row(2) =  valList.row(funcIndex3) - valList.row(funcIndex4);
             std::array<double, 60> nPoints = parse_convex_points3d(diff_mi);
             //Timer sub_timer(sub_twoFunc, [&](auto profileResult){profileTimer = combine_timer(profileTimer, profileResult);});
             zeroX = convex_hull_membership::contains<3, double>(nPoints, query_3d);
@@ -627,11 +630,11 @@ bool critMI(
                 grad.row(0) = gradList_eigen.row(funcIndex1) - gradList_eigen.row(funcIndex2);
                 grad.row(1) = gradList_eigen.row(funcIndex2) - gradList_eigen.row(funcIndex3);
                 grad.row(2) = gradList_eigen.row(funcIndex3) - gradList_eigen.row(funcIndex4);
-                Eigen::Matrix<double, 3, 16> grad_matrix(3, 16);
-                grad_matrix.row(0) = diffList.row(funcIndex1) - diffList.row(funcIndex2);
-                grad_matrix.row(1) = diffList.row(funcIndex2) - diffList.row(funcIndex3);
-                grad_matrix.row(2) = diffList.row(funcIndex3) - diffList.row(funcIndex4);
-                if (three_func_check (grad, grad_matrix.transpose(), sqD, threshold)){
+                Eigen::Matrix<double, 3, 16> diff_matrix(3, 16);
+                diff_matrix.row(0) = diffList.row(funcIndex1) - diffList.row(funcIndex2);
+                diff_matrix.row(1) = diffList.row(funcIndex2) - diffList.row(funcIndex3);
+                diff_matrix.row(2) = diffList.row(funcIndex3) - diffList.row(funcIndex4);
+                if (three_func_check (grad, diff_matrix.transpose(), sqD, threshold)){
                     //timer.Stop();
                     return true;
                 }

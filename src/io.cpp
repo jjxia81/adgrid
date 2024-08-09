@@ -9,14 +9,13 @@
 
 using namespace mtet;
 
-using IndexMap = ankerl::unordered_dense::map<uint64_t, size_t>;
 
 bool save_mesh_json(const std::string& filename,
                     const mtet::MTetMesh mesh)
 {
     std::vector<std::array<double, 3>> vertices((int)mesh.get_num_vertices());
     std::vector<std::array<size_t, 4>> tets((int)mesh.get_num_tets());
-    IndexMap vertex_tag_map;
+    ankerl::unordered_dense::map<uint64_t, size_t> vertex_tag_map;
     vertex_tag_map.reserve(mesh.get_num_vertices());
     int counter = 0;
     mesh.seq_foreach_vertex([&](VertexId vid, std::span<const Scalar, 3> data){
