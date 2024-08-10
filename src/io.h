@@ -8,6 +8,7 @@
 #pragma once
 
 #include <ankerl/unordered_dense.h>
+#include <Eigen/Core>
 #include "adaptive_grid_gen.h"
 #include "timer.h"
 
@@ -24,8 +25,8 @@ bool save_mesh_json(const std::string& filename,
                     const mtet::MTetMesh mesh);
 
 bool save_function_json(const std::string& filename,
-                        const mtet::MTetMesh mesh,
-                        ankerl::unordered_dense::map<uint64_t, llvm_vecsmall::SmallVector<std::array<double, 4>, 20>> vertex_func_grad_map,
+                        const mtet::MTetMesh grid,
+                        ankerl::unordered_dense::map<uint64_t, llvm_vecsmall::SmallVector<Eigen::RowVector4d, 20>> vertex_func_grad_map,
                         const size_t funcNum);
 
 /// saves the timing profile to a file

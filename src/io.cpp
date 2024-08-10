@@ -44,7 +44,7 @@ bool save_mesh_json(const std::string& filename,
 
 bool save_function_json(const std::string& filename,
                         const mtet::MTetMesh mesh,
-                        ankerl::unordered_dense::map<uint64_t, llvm_vecsmall::SmallVector<std::array<double, 4>, 20>> vertex_func_grad_map,
+                        ankerl::unordered_dense::map<uint64_t, llvm_vecsmall::SmallVector<Eigen::RowVector4d, 20>> vertex_func_grad_map,
                         const size_t funcNum)
 {
     std::vector<std::vector<double>> values(funcNum);
@@ -52,7 +52,7 @@ bool save_function_json(const std::string& filename,
         values[funcIter].reserve(((int)mesh.get_num_vertices()));
     }
     mesh.seq_foreach_vertex([&](VertexId vid, std::span<const Scalar, 3> data){
-        llvm_vecsmall::SmallVector<std::array<double, 4>, 20> func_gradList(funcNum);
+        llvm_vecsmall::SmallVector<Eigen::RowVector4d, 20> func_gradList(funcNum);
         func_gradList = vertex_func_grad_map[value_of(vid)];
         for (size_t funcIter = 0; funcIter < funcNum; funcIter++){
             values[funcIter].push_back(func_gradList[funcIter][0]);

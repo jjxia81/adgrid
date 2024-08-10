@@ -20,13 +20,15 @@
 /// MI examples: 18 spheres
 
 
+double alpha = std::numeric_limits<double>::infinity();
+int max_elements = std::numeric_limits<int>::max();
+double smallest_edge_length = 0;
+bool curve_network = false;
+bool discretize = false;
+
 TEST_CASE("grid generation of implicit arrangement on known examples", "[IA][examples]") {
     std::string function_file;
     double threshold;
-    double alpha = std::numeric_limits<double>::infinity();
-    int max_elements = std::numeric_limits<int>::max();;
-    double smallest_edge_length = 0;
-    bool curve_network = false;
     mtet::MTetMesh grid;
     llvm_vecsmall::SmallVector<csg_unit, 20> csg_tree = {};
     
@@ -56,7 +58,7 @@ TEST_CASE("grid generation of implicit arrangement on known examples", "[IA][exa
         };
         
         //start testing
-        bool success = gridRefine(IA, curve_network, threshold, alpha, max_elements, funcNum, implicit_func, csg_func, grid, metric_list, profileTimer);
+        bool success = gridRefine(IA, curve_network, threshold, alpha, max_elements, funcNum, implicit_func, csg_func, discretize,grid, metric_list, profileTimer);
         REQUIRE(success);
         
         //check
@@ -70,11 +72,7 @@ TEST_CASE("grid generation of implicit arrangement on known examples", "[IA][exa
 TEST_CASE("grid generation of CSG on known examples", "[CSG][examples]") {
     std::string function_file;
     double threshold;
-    double alpha = std::numeric_limits<double>::infinity();
-    int max_elements = std::numeric_limits<int>::max();;
-    double smallest_edge_length = 0;
     llvm_vecsmall::SmallVector<csg_unit, 20> csg_tree = {};
-    bool curve_network = false;
     mtet::MTetMesh grid;
     
     SECTION("20 tori") {
@@ -112,7 +110,7 @@ TEST_CASE("grid generation of CSG on known examples", "[CSG][examples]") {
             }
         };
         //start testing
-        bool success = gridRefine(CSG, curve_network, threshold, alpha, max_elements, funcNum, implicit_func, csg_func, grid, metric_list, profileTimer);
+        bool success = gridRefine(CSG, curve_network, threshold, alpha, max_elements, funcNum, implicit_func, csg_func, discretize, grid, metric_list, profileTimer);
         REQUIRE(success);
         
         //check
@@ -126,10 +124,6 @@ TEST_CASE("grid generation of CSG on known examples", "[CSG][examples]") {
 TEST_CASE("grid generation of material interface on known examples", "[MI][examples]") {
     std::string function_file;
     double threshold;
-    double alpha = std::numeric_limits<double>::infinity();
-    int max_elements = std::numeric_limits<int>::max();;
-    double smallest_edge_length = 0;
-    bool curve_network = false;
     mtet::MTetMesh grid;
     llvm_vecsmall::SmallVector<csg_unit, 20> csg_tree = {};
     auto csg_func = [&](llvm_vecsmall::SmallVector<std::array<double, 2>, 20> funcInt){
@@ -158,7 +152,7 @@ TEST_CASE("grid generation of material interface on known examples", "[MI][examp
             return vertex_eval;
         };
         //start testing
-        bool success = gridRefine(MI, curve_network, threshold, alpha, max_elements, funcNum, implicit_func, csg_func, grid, metric_list, profileTimer);
+        bool success = gridRefine(MI, curve_network, threshold, alpha, max_elements, funcNum, implicit_func, csg_func, discretize, grid, metric_list, profileTimer);
         REQUIRE(success);
         
         //check

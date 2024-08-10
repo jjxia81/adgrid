@@ -42,6 +42,7 @@ bool gridRefine(
                 const size_t funcNum,
                 const std::function<llvm_vecsmall::SmallVector<Eigen::RowVector4d, 20>(std::span<const Scalar, 3>, size_t)> func,
                 const std::function<std::pair<std::array<double, 2>, llvm_vecsmall::SmallVector<int, 20>>(llvm_vecsmall::SmallVector<std::array<double, 2>, 20>)> csg_func,
+                const bool discretize_later,
                 mtet::MTetMesh &grid,
                 tet_metric &metric_list,
                 std::array<double, timer_amount> profileTimer

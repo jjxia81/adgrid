@@ -32,6 +32,7 @@ int main(int argc, const char *argv[])
         bool bfs = false;
         bool dfs = false;
         bool curve_network = false;
+        bool discretize_later = false;
         //bool analysis_mode = false;
     } args;
     CLI::App app{"Longest Edge Bisection Refinement"};
@@ -43,8 +44,7 @@ int main(int argc, const char *argv[])
     app.add_option("--tree", args.csg_file, "CSG Tree file");
     app.add_option("-m,--max-elements", args.max_elements, "Maximum number of elements");
     app.add_option("-s,--shortest-edge", args.smallest_edge_length, "Shortest edge length");
-    app.add_option("-b, --bfs", args.bfs, "Toggle BFS Mode");
-    app.add_option("-d, --dfs", args.dfs, "Toggle DFS Mode");
+    app.add_option("-d,--discretize", args.discretize_later, "Save the grid file and function values for discretizing them later");
     app.add_option("-c, --curve_network", args.curve_network, "Generate Curve Network only");
     CLI11_PARSE(app, argc, argv);
     // Read initial grid
@@ -64,9 +64,7 @@ int main(int argc, const char *argv[])
     }
     std::string function_file = args.function_file;
     double threshold = args.threshold;
-    double alpha = args.alpha;
     int mode;
-    double smallest_edge_length = args.smallest_edge_length;
     llvm_vecsmall::SmallVector<csg_unit, 20> csg_tree = {};
     
     if (args.method == "IA"){
@@ -78,9 +76,6 @@ int main(int argc, const char *argv[])
     }
     if (args.method == "MI"){
         mode = MI;
-    }
-    if (args.curve_network){
-        curve_network = true;
     }
     
     /// Read implicit function
@@ -124,7 +119,7 @@ int main(int argc, const char *argv[])
     tet_metric metric_list;
     //an array of 10 timings: {total time getting the multiple indices, total time,time spent on single function, time spent on double functions, time spent on triple functions time spent on double functions' zero crossing test, time spent on three functions' zero crossing test, total subdivision time, total evaluation time,total splitting time}
     std::array<double, timer_amount> profileTimer = {0,0,0,0,0,0,0,0,0,0};
-    if (!gridRefine(mode, curve_network, threshold, alpha, max_elements, funcNum, implicit_func, csg_func, grid, metric_list, profileTimer))
+    if (!gridRefine(mode, args.curve_network, args.threshold, args.alpha, max_elements, funcNum, implicit_func, csg_func, args.discretize_later, grid, metric_list, profileTimer))
     {
         throw std::runtime_error("ERROR: unsuccessful grid refinement");
     }
