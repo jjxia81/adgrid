@@ -24,7 +24,6 @@ bool gridRefine(
                 const size_t funcNum,
                 const std::function<llvm_vecsmall::SmallVector<Eigen::RowVector4d, 20>(std::span<const Scalar, 3>, size_t)> func,
                 const std::function<std::pair<std::array<double, 2>, llvm_vecsmall::SmallVector<int, 20>>(llvm_vecsmall::SmallVector<std::array<double, 2>, 20>)> csg_func,
-                const bool discretize_later,
                 mtet::MTetMesh &grid,
                 tet_metric &metric_list,
                 std::array<double, timer_amount> profileTimer
@@ -235,17 +234,9 @@ bool gridRefine(
     metric_list.total_tet = grid.get_num_tets();
     metric_list.two_func_check = sub_call_two;
     metric_list.three_func_check = sub_call_three;
+    metric_list.vertex_func_grad_map = vertex_func_grad_map;
+    metric_list.activeTetId = activeTetId;
     //profiled time(see details in time.h) and profiled number of calls to zero
     std::cout << time_label[0] << ": " << profileTimer[0] << std::endl;
-
-    if (discretize_later){
-        /// save the grid output for discretization tool
-        save_mesh_json("grid.json", grid);
-        /// save the mesh output for isosurfacing tool
-        save_function_json("function_value.json", grid, vertex_func_grad_map, funcNum);
-    }
-    // write mesh and active tets
-    mtet::save_mesh("tet_grid.msh", grid);
-    mtet::save_mesh("active_tets.msh", grid, std::span<mtet::TetId>(activeTetId));
     return true;
 }

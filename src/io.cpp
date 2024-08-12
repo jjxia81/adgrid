@@ -7,7 +7,6 @@
 
 #include "io.h"
 
-using namespace mtet;
 
 
 bool save_mesh_json(const std::string& filename,
@@ -96,10 +95,8 @@ bool save_metrics(const std::string& filename,
                   const std::array<std::string, 6>& tet_metric_labels,
                   const tet_metric metric_list)
 {
-    // assert stats_labels.size() == stats.size()
     using json = nlohmann::json;
     std::ofstream fout(filename.c_str(),std::ios::app);
-    //fout.open(filename.c_str(),std::ios::app);
     json jOut;
     jOut[tet_metric_labels[0]] = metric_list.total_tet;
     jOut[tet_metric_labels[1]] = metric_list.active_tet;
@@ -107,9 +104,6 @@ bool save_metrics(const std::string& filename,
     jOut[tet_metric_labels[3]] = metric_list.active_radius_ratio;
     jOut[tet_metric_labels[4]] = metric_list.two_func_check;
     jOut[tet_metric_labels[5]] = metric_list.three_func_check;
-//    for (size_t i = 0; i < tet_metric.size(); ++i) {
-//        jOut[tet_metric_labels[i]] = tet_metric[i];
-//    }
     fout << jOut << std::endl;
     fout.close();
     return true;

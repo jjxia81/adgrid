@@ -62,7 +62,7 @@ void init_multi(const size_t funcNum,
 
 /// returns a `bool` value that `true` represents positive and `false` represents negative of the input value `x`.
 bool get_sign(double x) {
-    return (x > 0) ? 1 : 0;
+    return x > 0;
 }
 
 /// Construct the values of one function at the bezier control points within a tet.

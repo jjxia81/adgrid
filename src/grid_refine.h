@@ -21,11 +21,11 @@ using namespace mtet;
 ///
 /// @param[in] mode         The modality of the implicit complex, including Implicit Arrangement(IA), Contructive Solid Geometry(CSG), Material Interface(MI).
 /// @param[in] curve_network            Whether we're only computing the curve network of the complex.
-/// @param[in] threshold            The user-defined errro threshold. The smaller the value, the more refined the output grid.
-/// @param[in] alpha            An experimental variable. This helps to improve the quality of the tet that contains a part of the iso-surface. In the paper, the default is set to be infinity. If it's set to be 1, it will generate perfect tet in our experiments. However, there is no theoretical gaurantee.
+/// @param[in] threshold            The user-defined error threshold. The smaller the value, the more refined the output grid.
+/// @param[in] alpha            An experimental variable. This helps to improve the quality of the tet that contains a part of the iso-surface. In the paper, the default is set to be infinity. If it's set to be 1, it will generate tet with better quality (>= 0.64 in radius ratio, where radius ratio = 1 is the perfect tet) in our experiments. However, there is no theoretical gaurantee.
 /// @param[in] max_elements         The maximum number of grid elements to cap the algorithm.
 /// @param[in] funcNum          The number of functions that consist the complex.
-/// @param[in] func         The lambda function that computes implicit funcitons' values and gradients given a 3D coordinate and the number of functions.
+/// @param[in] func         The lambda function that computes implicit functions' values and gradients given a 3D coordinate and the number of functions.
 /// The input std::span<const Scalar, 3> is the 3D coordinate, size_t is the number of functions. The output is a vector of Eigen::RowVector4d. The vector size is the function number. Each eigen vector represents the value at 0th index and gradients at {1, 2, 3} index.
 /// @param[in] csg_func         The lambda function that represents the CSG operations. Given a vector of function intervals, this function returns the final interval(std::array<double, 2>) after the CSG tree traversing and a vector of active functions' indices(llvm_vecsmall::SmallVector<int, 20>).
 /// @param[out] grid            The final adaptive grid.
@@ -42,7 +42,6 @@ bool gridRefine(
                 const size_t funcNum,
                 const std::function<llvm_vecsmall::SmallVector<Eigen::RowVector4d, 20>(std::span<const Scalar, 3>, size_t)> func,
                 const std::function<std::pair<std::array<double, 2>, llvm_vecsmall::SmallVector<int, 20>>(llvm_vecsmall::SmallVector<std::array<double, 2>, 20>)> csg_func,
-                const bool discretize_later,
                 mtet::MTetMesh &grid,
                 tet_metric &metric_list,
                 std::array<double, timer_amount> profileTimer

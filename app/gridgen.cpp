@@ -5,7 +5,6 @@
 #include <span>
 #include <queue>
 #include <optional>
-//#include <implicit_functions.h>
 #include <CLI/CLI.hpp>
 
 #include "io.h"
@@ -57,7 +56,7 @@ int main(int argc, const char *argv[])
         grid = mtet::load_mesh(args.grid_file);
     }
     
-    double max_elements = args.max_elements;
+    int max_elements = args.max_elements;
     if (max_elements < 0)
     {
         max_elements = std::numeric_limits<int>::max();
@@ -119,7 +118,7 @@ int main(int argc, const char *argv[])
     tet_metric metric_list;
     //an array of 10 timings: {total time getting the multiple indices, total time,time spent on single function, time spent on double functions, time spent on triple functions time spent on double functions' zero crossing test, time spent on three functions' zero crossing test, total subdivision time, total evaluation time,total splitting time}
     std::array<double, timer_amount> profileTimer = {0,0,0,0,0,0,0,0,0,0};
-    if (!gridRefine(mode, args.curve_network, args.threshold, args.alpha, max_elements, funcNum, implicit_func, csg_func, args.discretize_later, grid, metric_list, profileTimer))
+    if (!gridRefine(mode, args.curve_network, args.threshold, args.alpha, max_elements, funcNum, implicit_func, csg_func, grid, metric_list, profileTimer))
     {
         throw std::runtime_error("ERROR: unsuccessful grid refinement");
     }
@@ -132,5 +131,17 @@ int main(int argc, const char *argv[])
     }
     // save tet metrics
     save_metrics("stats.json", tet_metric_labels, metric_list);
+    
+    
+    if (args.discretize_later){
+        std::cout << "here" << std::endl;
+        /// save the grid output for discretization tool
+        save_mesh_json("grid.json", grid);
+        /// save the grid output for isosurfacing tool
+        save_function_json("function_value.json", grid, metric_list.vertex_func_grad_map, funcNum);
+        /// write grid and active tets
+        mtet::save_mesh("tet_grid.msh", grid);
+        mtet::save_mesh("active_tets.msh", grid, std::span<mtet::TetId>(metric_list.activeTetId));
+    }
     return 0;
 }

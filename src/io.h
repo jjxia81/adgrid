@@ -12,6 +12,10 @@
 #include "adaptive_grid_gen.h"
 #include "timer.h"
 
+using namespace mtet;
+
+using IndexMap = ankerl::unordered_dense::map<uint64_t, llvm_vecsmall::SmallVector<Eigen::RowVector4d, 20>>;
+
 struct tet_metric {
     size_t total_tet = 0;
     int active_tet = 0;
@@ -19,6 +23,8 @@ struct tet_metric {
     double active_radius_ratio = 1;
     int two_func_check = 0;
     int three_func_check = 0;
+    IndexMap vertex_func_grad_map;
+    std::vector<mtet::TetId> activeTetId;
 };
 
 bool save_mesh_json(const std::string& filename,
