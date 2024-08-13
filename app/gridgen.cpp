@@ -134,7 +134,6 @@ int main(int argc, const char *argv[])
     
     
     if (args.discretize_later){
-        std::cout << "here" << std::endl;
         /// save the grid output for discretization tool
         save_mesh_json("grid.json", grid);
         /// save the grid output for isosurfacing tool
