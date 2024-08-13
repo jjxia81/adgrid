@@ -20,16 +20,6 @@ enum geo_obj {
     MI /*2*/
 };
 
-
-/// Below is the activation function that will only be used in `grid_refine` file. This precomputes the permutations: n choose 2, n choose 3, and n choose 4 (if in MI), where n ranges up to the number of input functions.
-/// Stores the index of permutations of n less than or equal to `funcNum`.
-///
-///@param[in] funcNum           The number of input functions
-///@param[in] mode          The modality of the implicit complex; MI requires one more type of permutation.
-void init_multi(const size_t funcNum,
-                const int mode);
-
-
 /// Three types of refinement criteria based on the modality.
 
 /// This function performs two checks (zero-crossing and distance checks) under the setting of implicit arrangement(IA) and its curve network.

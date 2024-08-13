@@ -62,7 +62,7 @@ TEST_CASE("grid generation of implicit arrangement on known examples", "[IA][exa
         
         //check
         REQUIRE(metric_list.total_tet == 1510932);
-        REQUIRE(metric_list.active_tet == 888667);
+        REQUIRE(metric_list.active_tet == 888666);
         REQUIRE(metric_list.two_func_check == 93455);
         REQUIRE(metric_list.three_func_check == 1576);
     }

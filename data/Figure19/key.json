@@ -1,7 +1,7 @@
 [
     {
         "type":"shader",
-        "name": "key.wgsl",
+        "shader": "key.wgsl",
         "delta": 1e-8
     }
 ]

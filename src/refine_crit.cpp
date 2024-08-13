@@ -18,48 +18,6 @@ std::array<double, 3> query_3d = {0.0, 0.0, 0.0}; // X, Y, Z
 
 /// Below are the local functions servicing `critIA` , `critCSG`, and `critMI`
 
-/// Stores the index of permutations of n less than or equal to `funcNum`.
-void init_multi(const size_t funcNum,
-                const int mode)
-{
-    multiple_indices.resize(funcNum);
-    for (int funcIter = 0; funcIter < funcNum; funcIter++){
-        multiple_indices[funcIter].resize(3);
-        int activeNum = funcIter + 1;
-        int pairNum = activeNum * (activeNum-1)/2, triNum = activeNum * (activeNum-1) * (activeNum - 2)/ 6;
-        int quadNum = activeNum * (activeNum - 1) * (activeNum - 2) * (activeNum - 3)/ 24;
-        llvm_vecsmall::SmallVector<std::array<int, 4>,100> pair(pairNum);
-        llvm_vecsmall::SmallVector<std::array<int, 4>, 100> triple(triNum);
-        llvm_vecsmall::SmallVector<std::array<int, 4>, 100> quad(quadNum);
-        int pairIt = 0, triIt = 0, quadIt = 0;
-        for (int i = 0; i < activeNum - 1; i++){
-            for (int j = i + 1; j < activeNum; j++){
-                pair[pairIt] = {i, j, 0, 0};
-                pairIt ++;
-                if (j < activeNum - 1){
-                    for (int k = j + 1; k < activeNum; k++){
-                        triple[triIt] = {i, j, k, 0};
-                        triIt ++;
-                        if (mode == MI){
-                            if (k < activeNum - 1){
-                                for (int m = k + 1; m < activeNum; m++){
-                                    quad[quadIt] = {i, j, k, m};
-                                    quadIt++;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        if (mode == MI){
-            multiple_indices[funcIter] = {pair, triple, quad};
-        }else{
-            multiple_indices[funcIter] = {pair, triple};
-        }
-    }
-}
-
 /// returns a `bool` value that `true` represents positive and `false` represents negative of the input value `x`.
 bool get_sign(double x) {
     return x > 0;
@@ -262,24 +220,27 @@ bool critIA(
     {
         //Timer timer(twoFunc, [&](auto profileResult){profileTimer = combine_timer(profileTimer, profileResult);});
         bool zeroX;
-        for (int pairIter = 0; pairIter < pairNum; pairIter ++){
-            std::array<int, 2> pairIndices = {activeFunc[multiples[0][pairIter][0]],activeFunc[multiples[0][pairIter][1]]};
-            std::array<double, 40> nPoints = parse_convex_points2d(valList(pairIndices, Eigen::all));
-            //Timer sub_timer(sub_twoFunc, [&](auto profileResult){profileTimer = combine_timer(profileTimer, profileResult);});
-            zeroX = convex_hull_membership::contains<2, double>(nPoints, query_2d);
-            //sub_timer.Stop();
-            
-            if (zeroX){
-                activeDouble_count++;
-                sub_call_two ++;
-                zeroXResult[pairIndices[0]][pairIndices[1]] = true;
-                zeroXResult[pairIndices[1]][pairIndices[0]] = true;
-                Eigen::Matrix<double, 2, 3> grad = gradList(pairIndices, Eigen::all);
-                Eigen::Matrix<double, 16, 2> diff_matrix = diffList(pairIndices, Eigen::all).transpose();
-                // two function linearity test:
-                if (two_func_check (grad, diff_matrix, sqD, threshold)){
-                    //timer.Stop();
-                    return true;
+        
+        for (int i = 0; i < activeNum - 1; i++){
+            for (int j = i + 1; j < activeNum; j++){
+                std::array<int, 2> pairIndices = {activeFunc[i], activeFunc[j]};
+                std::array<double, 40> nPoints = parse_convex_points2d(valList(pairIndices, Eigen::all));
+                //Timer sub_timer(sub_twoFunc, [&](auto profileResult){profileTimer = combine_timer(profileTimer, profileResult);});
+                zeroX = convex_hull_membership::contains<2, double>(nPoints, query_2d);
+                //sub_timer.Stop();
+                
+                if (zeroX){
+                    activeDouble_count++;
+                    sub_call_two ++;
+                    zeroXResult[pairIndices[0]][pairIndices[1]] = true;
+                    zeroXResult[pairIndices[1]][pairIndices[0]] = true;
+                    Eigen::Matrix<double, 2, 3> grad = gradList(pairIndices, Eigen::all);
+                    Eigen::Matrix<double, 16, 2> diff_matrix = diffList(pairIndices, Eigen::all).transpose();
+                    // two function linearity test:
+                    if (two_func_check (grad, diff_matrix, sqD, threshold)){
+                        //timer.Stop();
+                        return true;
+                    }
                 }
             }
         }
@@ -291,22 +252,26 @@ bool critIA(
     {
         //Timer timer(threeFunc, [&](auto profileResult){profileTimer = combine_timer(profileTimer, profileResult);});
         bool zeroX;
-        for (int triIter = 0; triIter < triNum; triIter ++){
-            std::array<int, 3> tripleIndices = {activeFunc[multiples[1][triIter][0]], activeFunc[multiples[1][triIter][1]], activeFunc[multiples[1][triIter][2]]};
-            if(!(zeroXResult[tripleIndices[0]][tripleIndices[1]]&&zeroXResult[tripleIndices[0]][tripleIndices[2]]&&zeroXResult[tripleIndices[1]][tripleIndices[2]]))
-                continue;
-            std::array<double, 60> nPoints = parse_convex_points3d(valList(tripleIndices, Eigen::all));
-            sub_call_three ++;
-            //Timer sub_timer(sub_threeFunc, [&](auto profileResult){profileTimer = combine_timer(profileTimer, profileResult);});
-            zeroX = convex_hull_membership::contains<3, double>(nPoints, query_3d);
-            //sub_timer.Stop();
-
-            if (zeroX){
-                Eigen::Matrix<double, 3, 3> grad = gradList(tripleIndices, Eigen::all);
-                Eigen::Matrix<double, 16, 3> diff_matrix = diffList(tripleIndices, Eigen::all).transpose();
-                if (three_func_check (grad, diff_matrix, sqD, threshold)){
-                    //timer.Stop();
-                    return true;
+        for (int i = 0; i < activeNum - 2; i++){
+            for (int j = i + 1; j < activeNum - 1; j++){
+                for (int k = j + 1; k < activeNum; k++){
+                    std::array<int, 3> tripleIndices = {activeFunc[i], activeFunc[j], activeFunc[k]};
+                    if(!(zeroXResult[tripleIndices[0]][tripleIndices[1]]&&zeroXResult[tripleIndices[0]][tripleIndices[2]]&&zeroXResult[tripleIndices[1]][tripleIndices[2]]))
+                        continue;
+                    std::array<double, 60> nPoints = parse_convex_points3d(valList(tripleIndices, Eigen::all));
+                    sub_call_three ++;
+                    //Timer sub_timer(sub_threeFunc, [&](auto profileResult){profileTimer = combine_timer(profileTimer, profileResult);});
+                    zeroX = convex_hull_membership::contains<3, double>(nPoints, query_3d);
+                    //sub_timer.Stop();
+                    
+                    if (zeroX){
+                        Eigen::Matrix<double, 3, 3> grad = gradList(tripleIndices, Eigen::all);
+                        Eigen::Matrix<double, 16, 3> diff_matrix = diffList(tripleIndices, Eigen::all).transpose();
+                        if (three_func_check (grad, diff_matrix, sqD, threshold)){
+                            //timer.Stop();
+                            return true;
+                        }
+                    }
                 }
             }
         }
@@ -408,24 +373,26 @@ bool critCSG(
     {
         //Timer timer(twoFunc, [&](auto profileResult){profileTimer = combine_timer(profileTimer, profileResult);});
         bool zeroX;
-        for (int pairIter = 0; pairIter < pairNum; pairIter ++){
-            std::array<int, 2> pairIndices = {activeFunc[multiples[0][pairIter][0]],activeFunc[multiples[0][pairIter][1]]};
-            std::array<double, 40> nPoints = parse_convex_points2d(valList(pairIndices, Eigen::all));
-            //Timer sub_timer(sub_twoFunc, [&](auto profileResult){profileTimer = combine_timer(profileTimer, profileResult);});
-            zeroX = convex_hull_membership::contains<2, double>(nPoints, query_2d);
-            //sub_timer.Stop();
-            
-            if (zeroX){
-                activeDouble_count++;
-                sub_call_two ++;
-                zeroXResult[pairIndices[0]][pairIndices[1]] = true;
-                zeroXResult[pairIndices[1]][pairIndices[0]] = true;
-                Eigen::Matrix<double, 2, 3> grad = gradList(pairIndices, Eigen::all);
-                Eigen::Matrix<double, 16, 2> diff_matrix = diffList(pairIndices, Eigen::all).transpose();
-                // two function linearity test:
-                if (two_func_check (grad, diff_matrix, sqD, threshold)){
-                    //timer.Stop();
-                    return true;
+        for (int i = 0; i < activeNum - 1; i++){
+            for (int j = i + 1; j < activeNum; j++){
+                std::array<int, 2> pairIndices = {activeFunc[i], activeFunc[j]};
+                std::array<double, 40> nPoints = parse_convex_points2d(valList(pairIndices, Eigen::all));
+                //Timer sub_timer(sub_twoFunc, [&](auto profileResult){profileTimer = combine_timer(profileTimer, profileResult);});
+                zeroX = convex_hull_membership::contains<2, double>(nPoints, query_2d);
+                //sub_timer.Stop();
+                
+                if (zeroX){
+                    activeDouble_count++;
+                    sub_call_two ++;
+                    zeroXResult[pairIndices[0]][pairIndices[1]] = true;
+                    zeroXResult[pairIndices[1]][pairIndices[0]] = true;
+                    Eigen::Matrix<double, 2, 3> grad = gradList(pairIndices, Eigen::all);
+                    Eigen::Matrix<double, 16, 2> diff_matrix = diffList(pairIndices, Eigen::all).transpose();
+                    // two function linearity test:
+                    if (two_func_check (grad, diff_matrix, sqD, threshold)){
+                        //timer.Stop();
+                        return true;
+                    }
                 }
             }
         }
@@ -437,22 +404,26 @@ bool critCSG(
     {
         //Timer timer(threeFunc, [&](auto profileResult){profileTimer = combine_timer(profileTimer, profileResult);});
         bool zeroX;
-        for (int triIter = 0; triIter < triNum; triIter ++){
-            std::array<int, 3> tripleIndices = {activeFunc[multiples[1][triIter][0]], activeFunc[multiples[1][triIter][1]], activeFunc[multiples[1][triIter][2]]};
-            if(!(zeroXResult[tripleIndices[0]][tripleIndices[1]]&&zeroXResult[tripleIndices[0]][tripleIndices[2]]&&zeroXResult[tripleIndices[1]][tripleIndices[2]]))
-                continue;
-            std::array<double, 60> nPoints = parse_convex_points3d(valList(tripleIndices, Eigen::all));
-            sub_call_three ++;
-            //Timer sub_timer(sub_threeFunc, [&](auto profileResult){profileTimer = combine_timer(profileTimer, profileResult);});
-            zeroX = convex_hull_membership::contains<3, double>(nPoints, query_3d);
-            //sub_timer.Stop();
-
-            if (zeroX){
-                Eigen::Matrix<double, 3, 3> grad = gradList(tripleIndices, Eigen::all);
-                Eigen::Matrix<double, 16, 3> diff_matrix = diffList(tripleIndices, Eigen::all).transpose();
-                if (three_func_check (grad, diff_matrix, sqD, threshold)){
-                    //timer.Stop();
-                    return true;
+        for (int i = 0; i < activeNum - 2; i++){
+            for (int j = i + 1; j < activeNum - 1; j++){
+                for (int k = j + 1; k < activeNum; k++){
+                    std::array<int, 3> tripleIndices = {activeFunc[i], activeFunc[j], activeFunc[k]};
+                    if(!(zeroXResult[tripleIndices[0]][tripleIndices[1]]&&zeroXResult[tripleIndices[0]][tripleIndices[2]]&&zeroXResult[tripleIndices[1]][tripleIndices[2]]))
+                        continue;
+                    std::array<double, 60> nPoints = parse_convex_points3d(valList(tripleIndices, Eigen::all));
+                    sub_call_three ++;
+                    //Timer sub_timer(sub_threeFunc, [&](auto profileResult){profileTimer = combine_timer(profileTimer, profileResult);});
+                    zeroX = convex_hull_membership::contains<3, double>(nPoints, query_3d);
+                    //sub_timer.Stop();
+                    
+                    if (zeroX){
+                        Eigen::Matrix<double, 3, 3> grad = gradList(tripleIndices, Eigen::all);
+                        Eigen::Matrix<double, 16, 3> diff_matrix = diffList(tripleIndices, Eigen::all).transpose();
+                        if (three_func_check (grad, diff_matrix, sqD, threshold)){
+                            //timer.Stop();
+                            return true;
+                        }
+                    }
                 }
             }
         }
@@ -512,56 +483,56 @@ bool critMI(
     llvm_vecsmall::SmallVector<llvm_vecsmall::SmallVector<std::array<int, 4>, 100>, 3> multiples = multiple_indices[activeNum - 1];
 //    get_func_timer.Stop();
     
-    for (int pairIter = 0; pairIter < pairNum; pairIter ++){
-        //Timer single_timer(singleFunc, [&](auto profileResult){profileTimer = combine_timer(profileTimer, profileResult);});
-        std::array<int, 2> pairIndices = {activeFunc[multiples[0][pairIter][0]],activeFunc[multiples[0][pairIter][1]]};
-        int funcIndex1 = pairIndices[0];
-        int funcIndex2 = pairIndices[1];
-        Eigen::Vector<double, 20> diff_at_point;
-        diff_at_point = valList.row(funcIndex2) - valList.row(funcIndex1);
-        bool activeTF = get_sign(diff_at_point.maxCoeff()) == get_sign(diff_at_point.minCoeff()) ? false : true;
-        //single_timer.Stop();
-        if (activeTF){
-            if (!active){
-                active = true;
-            }
-            activePair[pairIndices[0]][pairIndices[1]] = true;
-            activePair[pairIndices[1]][pairIndices[0]] = true;
-            if (!activeList[funcIndex1]){
-                activeList[funcIndex1] = true;
-                double v0 = valList(funcIndex1, 0), v1 = valList(funcIndex1, 1), v2 = valList(funcIndex1, 2), v3 = valList(funcIndex1, 3);
-                Eigen::Vector3d unNormF_eigen = Eigen::RowVector3d(v1-v0, v2-v0, v3-v0) * crossMatrix_eigen.transpose();
-                gradList_eigen.row(funcIndex1) = unNormF_eigen;
-                
-                diffList.row(funcIndex1) = bezierDiff(valList.row(funcIndex1));
-            }
-            if (!activeList[funcIndex2]){
-                activeList[funcIndex2] = true;
-                double v0 = valList(funcIndex2, 0), v1 = valList(funcIndex2, 1), v2 = valList(funcIndex2, 2), v3 = valList(funcIndex2, 3);
-                Eigen::Vector3d unNormF_eigen = Eigen::RowVector3d(v1-v0, v2-v0, v3-v0) * crossMatrix_eigen.transpose();
-                gradList_eigen.row(funcIndex2) = unNormF_eigen;
-                diffList.row(funcIndex2) = bezierDiff(valList.row(funcIndex2));
-
-            }
-            Eigen::Vector<double, 16> diff_twofunc;
-            diff_twofunc = diffList.row(funcIndex1) - diffList.row(funcIndex2);
-            //Timer single2_timer(singleFunc, [&](auto profileResult){profileTimer = combine_timer(profileTimer, profileResult);});
-            double error = std::max(diff_twofunc.maxCoeff(), -diff_twofunc.minCoeff());
-            Eigen::Vector3d grad_eigen;
-            grad_eigen = gradList_eigen.row(funcIndex1) - gradList_eigen.row(funcIndex2);
-            double lhs = error * error * sqD;
-            double rhs;
-            if (!curve_network){
-                rhs = threshold * threshold * grad_eigen.squaredNorm();
-            }else{
-                rhs = std::numeric_limits<double>::infinity() * grad_eigen.squaredNorm();
-            }
-            if (lhs > rhs) {
+    for (int i = 0; i < activeNum - 1; i++){
+        for (int j = i + 1; j < activeNum; j++){
+            //Timer single_timer(singleFunc, [&](auto profileResult){profileTimer = combine_timer(profileTimer, profileResult);});
+            int funcIndex1 = activeFunc[i];
+            int funcIndex2 = activeFunc[j];
+            Eigen::Vector<double, 20> diff_at_point;
+            diff_at_point = valList.row(funcIndex2) - valList.row(funcIndex1);
+            bool activeTF = get_sign(diff_at_point.maxCoeff()) == get_sign(diff_at_point.minCoeff()) ? false : true;
+            //single_timer.Stop();
+            if (activeTF){
+                if (!active){
+                    active = true;
+                }
+                activePair[funcIndex1][funcIndex2] = true;
+                activePair[funcIndex2][funcIndex1] = true;
+                if (!activeList[funcIndex1]){
+                    activeList[funcIndex1] = true;
+                    double v0 = valList(funcIndex1, 0), v1 = valList(funcIndex1, 1), v2 = valList(funcIndex1, 2), v3 = valList(funcIndex1, 3);
+                    Eigen::Vector3d unNormF_eigen = Eigen::RowVector3d(v1-v0, v2-v0, v3-v0) * crossMatrix_eigen.transpose();
+                    gradList_eigen.row(funcIndex1) = unNormF_eigen;
+                    
+                    diffList.row(funcIndex1) = bezierDiff(valList.row(funcIndex1));
+                }
+                if (!activeList[funcIndex2]){
+                    activeList[funcIndex2] = true;
+                    double v0 = valList(funcIndex2, 0), v1 = valList(funcIndex2, 1), v2 = valList(funcIndex2, 2), v3 = valList(funcIndex2, 3);
+                    Eigen::Vector3d unNormF_eigen = Eigen::RowVector3d(v1-v0, v2-v0, v3-v0) * crossMatrix_eigen.transpose();
+                    gradList_eigen.row(funcIndex2) = unNormF_eigen;
+                    diffList.row(funcIndex2) = bezierDiff(valList.row(funcIndex2));
+                    
+                }
+                Eigen::Vector<double, 16> diff_twofunc;
+                diff_twofunc = diffList.row(funcIndex1) - diffList.row(funcIndex2);
+                //Timer single2_timer(singleFunc, [&](auto profileResult){profileTimer = combine_timer(profileTimer, profileResult);});
+                double error = std::max(diff_twofunc.maxCoeff(), -diff_twofunc.minCoeff());
+                Eigen::Vector3d grad_eigen;
+                grad_eigen = gradList_eigen.row(funcIndex1) - gradList_eigen.row(funcIndex2);
+                double lhs = error * error * sqD;
+                double rhs;
+                if (!curve_network){
+                    rhs = threshold * threshold * grad_eigen.squaredNorm();
+                }else{
+                    rhs = std::numeric_limits<double>::infinity() * grad_eigen.squaredNorm();
+                }
+                if (lhs > rhs) {
+                    //single2_timer.Stop();
+                    return true;
+                }
                 //single2_timer.Stop();
-                return true;
             }
-            //single2_timer.Stop();
-            
         }
     }
     
@@ -570,32 +541,35 @@ bool critMI(
     {
         //Timer timer(twoFunc, [&](auto profileResult){profileTimer = combine_timer(profileTimer, profileResult);});
         bool zeroX;
-        for (int tripleIter = 0; tripleIter < triNum; tripleIter ++){
-            std::array<int, 3> tripleIndices = {multiples[1][tripleIter][0], multiples[1][tripleIter][1], multiples[1][tripleIter][2]};
-            int funcIndex1 = /*triple[tripleIter][0]*/activeFunc[multiples[1][tripleIter][0]];
-            int funcIndex2 = activeFunc[multiples[1][tripleIter][1]];
-            int funcIndex3 = activeFunc[multiples[1][tripleIter][2]];
-            if(!(activePair[funcIndex1][funcIndex2]&&activePair[funcIndex1][funcIndex3]&&activePair[funcIndex2][funcIndex3]))
-                continue;
-            Eigen::Matrix<double,2, 20> diff_mi(2, 20);
-            diff_mi.row(0) = valList.row(funcIndex1) - valList.row(funcIndex2);
-            diff_mi.row(1) =  valList.row(funcIndex2) - valList.row(funcIndex3);
-            std::array<double, 40> nPoints = parse_convex_points2d(diff_mi);
-            //Timer sub_timer(sub_twoFunc, [&](auto profileResult){profileTimer = combine_timer(profileTimer, profileResult);});
-            zeroX = convex_hull_membership::contains<2, double>(nPoints, query_2d);
-            //sub_timer.Stop();
-            if (zeroX){
-                sub_call_two ++;
-                activeTriple_count++;
-                Eigen::Matrix<double, 2, 3> grad(2, 3);
-                grad.row(0) = gradList_eigen.row(funcIndex1) - gradList_eigen.row(funcIndex2);
-                grad.row(1) = gradList_eigen.row(funcIndex2) - gradList_eigen.row(funcIndex3);
-                Eigen::Matrix<double, 2, 16> diff_matrix(2, 16);
-                diff_matrix.row(0) = diffList.row(funcIndex1) - diffList.row(funcIndex2);
-                diff_matrix.row(1) = diffList.row(funcIndex2) - diffList.row(funcIndex3);
-                if (two_func_check (grad, diff_matrix.transpose(), sqD, threshold)){
-                    //timer.Stop();
-                    return true;
+        for (int i = 0; i < activeNum - 2; i++){
+            for (int j = i + 1; j < activeNum - 1; j++){
+                for (int k = j + 1; k < activeNum; k++){
+                    int funcIndex1 = activeFunc[i];
+                    int funcIndex2 = activeFunc[j];
+                    int funcIndex3 = activeFunc[k];
+                    if(!(activePair[funcIndex1][funcIndex2]&&activePair[funcIndex1][funcIndex3]&&activePair[funcIndex2][funcIndex3]))
+                        continue;
+                    Eigen::Matrix<double,2, 20> diff_mi(2, 20);
+                    diff_mi.row(0) = valList.row(funcIndex1) - valList.row(funcIndex2);
+                    diff_mi.row(1) =  valList.row(funcIndex2) - valList.row(funcIndex3);
+                    std::array<double, 40> nPoints = parse_convex_points2d(diff_mi);
+                    //Timer sub_timer(sub_twoFunc, [&](auto profileResult){profileTimer = combine_timer(profileTimer, profileResult);});
+                    zeroX = convex_hull_membership::contains<2, double>(nPoints, query_2d);
+                    //sub_timer.Stop();
+                    if (zeroX){
+                        sub_call_two ++;
+                        activeTriple_count++;
+                        Eigen::Matrix<double, 2, 3> grad(2, 3);
+                        grad.row(0) = gradList_eigen.row(funcIndex1) - gradList_eigen.row(funcIndex2);
+                        grad.row(1) = gradList_eigen.row(funcIndex2) - gradList_eigen.row(funcIndex3);
+                        Eigen::Matrix<double, 2, 16> diff_matrix(2, 16);
+                        diff_matrix.row(0) = diffList.row(funcIndex1) - diffList.row(funcIndex2);
+                        diff_matrix.row(1) = diffList.row(funcIndex2) - diffList.row(funcIndex3);
+                        if (two_func_check (grad, diff_matrix.transpose(), sqD, threshold)){
+                            //timer.Stop();
+                            return true;
+                        }
+                    }
                 }
             }
         }
@@ -606,37 +580,42 @@ bool critMI(
     {
         //Timer timer(threeFunc, [&](auto profileResult){profileTimer = combine_timer(profileTimer, profileResult);});
         bool zeroX;
-        for (int quadIter = 0; quadIter < quadNum; quadIter ++){
-            std::array<int, 4> quadIndices = {multiples[2][quadIter][0], multiples[2][quadIter][1], multiples[2][quadIter][2],multiples[2][quadIter][3]};
-            int funcIndex1 = activeFunc[multiples[2][quadIter][0]];
-            int funcIndex2 = activeFunc[multiples[2][quadIter][1]];
-            int funcIndex3 = activeFunc[multiples[2][quadIter][2]];
-            int funcIndex4 = activeFunc[multiples[2][quadIter][3]];
-            if(!(activePair[funcIndex1][funcIndex2]&&activePair[funcIndex1][funcIndex3]&&activePair[funcIndex1][funcIndex4]&&activePair[funcIndex2][funcIndex3]&&activePair[funcIndex2][funcIndex4]&&activePair[funcIndex3][funcIndex4]))
-                continue;
-            
-            Eigen::Matrix<double,3, 20> diff_mi(3, 20);
-            diff_mi.row(0) = valList.row(funcIndex1) - valList.row(funcIndex2);
-            diff_mi.row(1) =  valList.row(funcIndex2) - valList.row(funcIndex3);
-            diff_mi.row(2) =  valList.row(funcIndex3) - valList.row(funcIndex4);
-            std::array<double, 60> nPoints = parse_convex_points3d(diff_mi);
-            //Timer sub_timer(sub_twoFunc, [&](auto profileResult){profileTimer = combine_timer(profileTimer, profileResult);});
-            zeroX = convex_hull_membership::contains<3, double>(nPoints, query_3d);
-            //sub_timer.Stop();
-
-            if (zeroX){
-                sub_call_three ++;
-                Eigen::Matrix<double, 3, 3> grad(3, 3);
-                grad.row(0) = gradList_eigen.row(funcIndex1) - gradList_eigen.row(funcIndex2);
-                grad.row(1) = gradList_eigen.row(funcIndex2) - gradList_eigen.row(funcIndex3);
-                grad.row(2) = gradList_eigen.row(funcIndex3) - gradList_eigen.row(funcIndex4);
-                Eigen::Matrix<double, 3, 16> diff_matrix(3, 16);
-                diff_matrix.row(0) = diffList.row(funcIndex1) - diffList.row(funcIndex2);
-                diff_matrix.row(1) = diffList.row(funcIndex2) - diffList.row(funcIndex3);
-                diff_matrix.row(2) = diffList.row(funcIndex3) - diffList.row(funcIndex4);
-                if (three_func_check (grad, diff_matrix.transpose(), sqD, threshold)){
-                    //timer.Stop();
-                    return true;
+        for (int i = 0; i < activeNum - 3; i++){
+            for (int j = i + 1; j < activeNum - 2; j++){
+                for (int k = j + 1; k < activeNum - 1; k++){
+                    for (int m = k + 1; m < activeNum; m++){
+                        int funcIndex1 = activeFunc[i];
+                        int funcIndex2 = activeFunc[j];
+                        int funcIndex3 = activeFunc[k];
+                        int funcIndex4 = activeFunc[m];
+                        if(!(activePair[funcIndex1][funcIndex2]&&activePair[funcIndex1][funcIndex3]&&activePair[funcIndex1][funcIndex4]&&activePair[funcIndex2][funcIndex3]&&activePair[funcIndex2][funcIndex4]&&activePair[funcIndex3][funcIndex4]))
+                            continue;
+                        
+                        Eigen::Matrix<double,3, 20> diff_mi(3, 20);
+                        diff_mi.row(0) = valList.row(funcIndex1) - valList.row(funcIndex2);
+                        diff_mi.row(1) =  valList.row(funcIndex2) - valList.row(funcIndex3);
+                        diff_mi.row(2) =  valList.row(funcIndex3) - valList.row(funcIndex4);
+                        std::array<double, 60> nPoints = parse_convex_points3d(diff_mi);
+                        //Timer sub_timer(sub_twoFunc, [&](auto profileResult){profileTimer = combine_timer(profileTimer, profileResult);});
+                        zeroX = convex_hull_membership::contains<3, double>(nPoints, query_3d);
+                        //sub_timer.Stop();
+                        
+                        if (zeroX){
+                            sub_call_three ++;
+                            Eigen::Matrix<double, 3, 3> grad(3, 3);
+                            grad.row(0) = gradList_eigen.row(funcIndex1) - gradList_eigen.row(funcIndex2);
+                            grad.row(1) = gradList_eigen.row(funcIndex2) - gradList_eigen.row(funcIndex3);
+                            grad.row(2) = gradList_eigen.row(funcIndex3) - gradList_eigen.row(funcIndex4);
+                            Eigen::Matrix<double, 3, 16> diff_matrix(3, 16);
+                            diff_matrix.row(0) = diffList.row(funcIndex1) - diffList.row(funcIndex2);
+                            diff_matrix.row(1) = diffList.row(funcIndex2) - diffList.row(funcIndex3);
+                            diff_matrix.row(2) = diffList.row(funcIndex3) - diffList.row(funcIndex4);
+                            if (three_func_check (grad, diff_matrix.transpose(), sqD, threshold)){
+                                //timer.Stop();
+                                return true;
+                            }
+                        }
+                    }
                 }
             }
         }

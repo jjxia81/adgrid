@@ -7,14 +7,6 @@
 
 #include "grid_refine.h"
 
-/// hash for mounting a boolean that represents the activeness to a tet
-/// since the tetid isn't const during the process, mount the boolean using vertexids of 4 corners.
-uint64_t vertexHash(std::span<VertexId, 4>& x)
-{
-    ankerl::unordered_dense::hash<uint64_t> hash_fn;
-    return hash_fn(value_of(x[0])) + hash_fn(value_of(x[1])) + hash_fn(value_of(x[2])) + hash_fn(value_of(x[3]));
-}
-
 bool gridRefine(
                 const int mode,
                 const bool curve_network,
@@ -29,9 +21,6 @@ bool gridRefine(
                 std::array<double, timer_amount> profileTimer
                 )
 {
-    /// Precomputing active multiples' indices:
-    init_multi(funcNum, mode);
-    
     /// Tet Metric
     int sub_call_two = 0;
     int sub_call_three = 0;
@@ -41,11 +30,11 @@ bool gridRefine(
     using IndexMap = ankerl::unordered_dense::map<uint64_t, llvm_vecsmall::SmallVector<Eigen::RowVector4d, 20>>;
     IndexMap vertex_func_grad_map;
     vertex_func_grad_map.reserve(grid.get_num_vertices());
-
-    ///initialize activeness map: four vertexids (v0, v1, v2, v3) -> hash(v0, v1, v2, v3) -> active boolean
-    using activeMap = ankerl::unordered_dense::map<uint64_t, bool>;
-    activeMap vertex_active_map;
-    vertex_active_map.reserve(grid.get_num_tets());
+    
+    /// hash for mounting a boolean that represents the activeness to a tet
+    using tetActive = ankerl::unordered_dense::map<std::span<VertexId, 4>, bool, TetHash, TetEqual>;
+    tetActive tet_active_map;
+    tet_active_map.reserve(grid.get_num_tets());
 
     grid.seq_foreach_vertex([&](VertexId vid, std::span<const Scalar, 3> data)
                             {vertex_func_grad_map[value_of(vid)] = func(data, funcNum);});
@@ -107,7 +96,8 @@ bool gridRefine(
             }
             //sub_timer.Stop();
         }
-        vertex_active_map[vertexHash(vs)] = isActive;
+        //vertex_active_map[vertexHash(vs)] = isActive;
+        tet_active_map[vs] = isActive;
         //Timer eval_timer(evaluation, [&](auto profileResult){profileTimer = combine_timer(profileTimer, profileResult);});
         if (subResult)
         {
@@ -154,8 +144,8 @@ bool gridRefine(
             bool addedActive = false;
             grid.foreach_tet_around_edge(eid,[&](mtet::TetId tid){
                 std::span<VertexId, 4> vs = grid.get_tet(tid);
-                if(vertex_active_map.contains(vertexHash(vs))){
-                    if (vertex_active_map[vertexHash(vs)]){
+                if(/*vertex_active_map.contains(vertexHash(vs))*/tet_active_map.contains(vs)){
+                    if (tet_active_map[vs]){
                         mtet::EdgeId longest_edge;
                         mtet::Scalar longest_edge_length = 0;
                         grid.foreach_edge_in_tet(tid, [&](mtet::EdgeId eid_active, mtet::VertexId v0, mtet::VertexId v1)
@@ -221,8 +211,8 @@ bool gridRefine(
         if (ratio < metric_list.min_radius_ratio){
             metric_list.min_radius_ratio = ratio;
         }
-        if(vertex_active_map.contains(vertexHash(vs))){
-            if (vertex_active_map[vertexHash(vs)]){
+        if(tet_active_map.contains(vs)){
+            if (tet_active_map[vs]){
                 metric_list.active_tet++;
                 activeTetId.push_back(tid);
                 if (ratio < metric_list.active_radius_ratio){
