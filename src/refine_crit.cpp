@@ -7,11 +7,6 @@
 
 #include "refine_crit.h"
 
-/// Below are the variable definitions that will only be used in `refine_crit.cpp`
-///
-/// Stores the index of permutations of n less than `funcNum` for the use in `subTet` and `subMI` functions.
-llvm_vecsmall::SmallVector<llvm_vecsmall::SmallVector<llvm_vecsmall::SmallVector<std::array<int, 4>, 100>, 3>, 20> multiple_indices;
-
 ///Stores the 2d and 3d origin for the convex hull check happened in zero-crossing criteria.
 std::array<double, 2> query_2d = {0.0, 0.0}; // X, Y
 std::array<double, 3> query_3d = {0.0, 0.0, 0.0}; // X, Y, Z
@@ -213,7 +208,6 @@ bool critIA(
     llvm_vecsmall::SmallVector<llvm_vecsmall::SmallVector<bool, 20>, 20> zeroXResult(funcNum, llvm_vecsmall::SmallVector<bool, 20>(funcNum));
     //single_timer.Stop();
     const int pairNum = activeNum * (activeNum-1)/2, triNum = activeNum * (activeNum-1) * (activeNum - 2)/ 6;
-    llvm_vecsmall::SmallVector<llvm_vecsmall::SmallVector<std::array<int, 4>, 100>, 3> multiples = multiple_indices[activeNum - 1];
     
     // 2-function checks
     int activeDouble_count = 0;
@@ -366,7 +360,6 @@ bool critCSG(
     llvm_vecsmall::SmallVector<llvm_vecsmall::SmallVector<bool, 20>, 20> zeroXResult(funcNum, llvm_vecsmall::SmallVector<bool, 20>(funcNum));
     //single_timer.Stop();
     const int pairNum = activeNum * (activeNum-1)/2, triNum = activeNum * (activeNum-1) * (activeNum - 2)/ 6;
-    llvm_vecsmall::SmallVector<llvm_vecsmall::SmallVector<std::array<int, 4>, 100>, 3> multiples = multiple_indices[activeNum - 1];
     
     // 2-function checks
     int activeDouble_count = 0;
@@ -480,7 +473,6 @@ bool critMI(
 
     //Timer get_func_timer(getActiveMuti, [&](auto profileResult){profileTimer = combine_timer(profileTimer, profileResult);});
     const size_t pairNum = activeNum * (activeNum-1)/2, triNum = activeNum * (activeNum-1) * (activeNum - 2)/ 6, quadNum = activeNum * (activeNum - 1) * (activeNum - 2) * (activeNum - 3)/ 24;
-    llvm_vecsmall::SmallVector<llvm_vecsmall::SmallVector<std::array<int, 4>, 100>, 3> multiples = multiple_indices[activeNum - 1];
 //    get_func_timer.Stop();
     
     for (int i = 0; i < activeNum - 1; i++){
