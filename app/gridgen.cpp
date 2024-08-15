@@ -50,8 +50,6 @@ int main(int argc, const char *argv[])
     mtet::MTetMesh grid;
     if (args.grid_file.find(".json") != std::string::npos){
         grid = grid_mesh::load_tet_mesh(args.grid_file);
-        mtet::save_mesh("init.msh", grid);
-        grid = mtet::load_mesh("init.msh");
     } else {
         grid = mtet::load_mesh(args.grid_file);
     }
