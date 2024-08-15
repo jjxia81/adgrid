@@ -1,5 +1,5 @@
 cd ../../build/Release
 
-chmod +x isosurfacing
+chmod +x gridgen
 
-./isosurfacing ../../data/Figure11/grid_1.json ../../data/Figure11/3-cylinder.json -t 0.005
+./gridgen ../../data/Figure11/grid_1.json ../../data/Figure11/3-cylinder.json -t 0.005

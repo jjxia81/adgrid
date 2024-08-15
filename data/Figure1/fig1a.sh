@@ -1,5 +1,5 @@
 cd ../../build/Release
 
-chmod +x isosurfacing
+chmod +x gridgen
 
-./isosurfacing ../../data/mesh/cube6.msh ../../data/Figure1/10-wikiBall.json -t 0.0005
+./gridgen ../../data/grid/cube6.msh ../../data/Figure1/10-wikiBall.json -t 0.0005
