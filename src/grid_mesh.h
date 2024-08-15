@@ -156,7 +156,7 @@ namespace grid_mesh {
         std::vector<std::pair<mtet::Scalar, mtet::EdgeId>> Q;
         auto push_longest_edge = [&](mtet::TetId tid, mtet::Scalar longest_bound)
         {
-            std::span<VertexId, 4> vs = grid.get_tet(tid);
+            std::span<mtet::VertexId, 4> vs = grid.get_tet(tid);
             mtet::EdgeId longest_edge;
             mtet::Scalar longest_edge_length = 0;
             grid.foreach_edge_in_tet(tid, [&](mtet::EdgeId eid, mtet::VertexId v0, mtet::VertexId v1)
@@ -244,8 +244,7 @@ namespace grid_mesh {
                     throw std::runtime_error("unknown grid style!");
                 }
             }
-            //return generate_tet_mesh(resolution, bbox_min, bbox_max, style);
-            return generate_from_kuhn_mesh(resolution, bbox_min, bbox_max, style);
+            return generate_tet_mesh(resolution, bbox_min, bbox_max, style);
         }
         // vertices
         std::vector<std::array<double, 3>> pts;
