@@ -71,7 +71,7 @@ Eigen::Vector<double, 16> bezierDiff(const Eigen::Vector<double,20> valList)
 /// @return A array that convexhull memship library can use.
 std::array<double, 40> parse_convex_points2d(const Eigen::Matrix<double, 2, 20> valList) {
     std::array<double, 40> transposed;
-    Eigen::MatrixXd::Map(transposed.data(), 1, 40) = valList.transpose();
+    Eigen::MatrixXd::Map(transposed.data(), 2, 20) = valList;
     return transposed;
 }
 
@@ -82,7 +82,7 @@ std::array<double, 40> parse_convex_points2d(const Eigen::Matrix<double, 2, 20> 
 /// @return A array that convexhull memship library can use.
 std::array<double, 60> parse_convex_points3d(const Eigen::Matrix<double, 3, 20> valList) {
     std::array<double, 60> transposed;
-    Eigen::MatrixXd::Map(transposed.data(), 1, 60) = valList.transpose();
+    Eigen::MatrixXd::Map(transposed.data(), 3, 20) = valList;
     return transposed;
 }
 
