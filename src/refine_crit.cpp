@@ -448,7 +448,7 @@ bool critMI(
     llvm_vecsmall::SmallVector<bool, 20> activeList(funcNum);
     llvm_vecsmall::SmallVector<std::array<double , 2>, 20> funcInt(funcNum);
     double maxLow = -1 * std::numeric_limits<double>::infinity();
-    llvm_vecsmall::SmallVector<llvm_vecsmall::SmallVector<bool, 20>, 20> activePair(funcNum, llvm_vecsmall::SmallVector<bool, 20>(false, funcNum));
+    llvm_vecsmall::SmallVector<llvm_vecsmall::SmallVector<bool, 20>, 20> activePair(funcNum, llvm_vecsmall::SmallVector<bool, 20>(funcNum, false));
     //single function linearity check:
     for (int funcIter = 0; funcIter < funcNum; funcIter++){
         Eigen::Matrix4d func_info;
