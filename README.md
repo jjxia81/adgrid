@@ -18,7 +18,7 @@ The program `gridgen` will be generated in the build file.
 
 ### Dependency
 
-Currently, all the packages dependencies are available. These are currently in a release process and will be available shortly.
+Currently, all the packages dependencies are available.
 
 ## Usage
 
@@ -42,7 +42,8 @@ Examples of grid files can be found in the `data/grid` directory.
 - `--tree` : The path to the CSG tree file that defines the set of boolean operations on the functions. Only required if the option is set to be "CSG".
 - `-c, --curve_network` : Set the switch of extracting only the Curve Network. Notice that Curve Network of all the above implicit complexes are different given the same set of input functions. This is a `BOOLEAN` type that takes in 1 or 0.
 - `-m, --max-elements` : Set the maximum number of elements in the grid after refinement. This is an `INT` value that limits the size of the generated grid. If this value is a **negative** number, the grid will be refined until the threshold value is reached.
-- `-s,--shortest-edge` : Set the shortest length of edges in the grid after refinement. This is a `DOUBLE` value that defines the shortest edge length.
+- `-s, --shortest-edge` : Set the shortest length of edges in the grid after refinement. This is a `DOUBLE` value that defines the shortest edge length.
+- `-d, --discretize` : Save the output grid structure for the use of downstream discretization/contouring process. This is a `BOOLEAN` type to toggle.
 
 ## Example
 
@@ -64,7 +65,7 @@ You can always run `./gridgen -h` to display the help message which provides usa
 
 The complete set of output files include data files (`tet_mesh.msh`, `active_tets.msh`, `grid.json`, and `function_value.json`) and information files (`timings.json` and `stats.json`). The first two files can be viewed using [Gmsh](https://gmsh.info/) software showing the entire background grid or only the grid elements containing the surfaces. The last two files are for the later tool to discretize the implicit complex. 
 
-We have an off-the-shelf algorithm that extracts the isosurfacs robustly from the grid for implicit complexes. First download and build [this discretization method](https://github.com/duxingyi-charles/Robust-Implicit-Surface-Networks/tree/main) following its instructions. 
+We have an off-the-shelf algorithm that extracts the contouring robustly from the grid for implicit complexes. First download and build [this discretization method](https://github.com/duxingyi-charles/Robust-Implicit-Surface-Networks/tree/main) following its instructions. 
 
 After generating the grid using our method, please use the above discretization tool by replacing its `config_file` with `data/config.json` according its usage example: 
 
@@ -72,7 +73,7 @@ After generating the grid using our method, please use the above discretization 
 ./impl_arrangement [OPTIONS] config_file
 ```
 
- Currently, this discretization tool supports implicit arrangement, material interface, and CSG. For CSG, please specify the same path to the CSG tree file using the same command.
+ Currently, this discretization tool supports implicit arrangement, material interface, and CSG. For CSG, please specify the same CSG tree file to the same file used in the current command that generates the grid.
  
  ## Information Files
  
