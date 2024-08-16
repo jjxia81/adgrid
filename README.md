@@ -1,6 +1,6 @@
 # Adaptive Grid Generation for Discretizing Implicit Complexes
 
-![](https://github.com/user-attachments/assets/c102e033-dbee-4fe5-942f-953cd21f0f14)
+![](https://github.com/user-attachments/assets/15767a40-4805-41ec-9dcc-8979dca7d5a5)
 
 This code implements the ACM SIGGRAPH 2024 paper: [Adaptive grid generation for discretizing implicit complexes](https://dl.acm.org/doi/10.1145/3658215). Given one or multiple functions in 3D and desired type of implicit complex defined by these functions (e.g., implicit arrangement, material interface, CSG, or curve network), this algorithm generates an adaptive simplicial (tetrahedral) grid, which can then be used to discretize the implicit complex using [this robust method](https://github.com/duxingyi-charles/Robust-Implicit-Surface-Networks/tree/main).
 
