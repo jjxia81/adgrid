@@ -9,10 +9,10 @@
 #define adaptive_grid_gen_h
 #include <iostream>
 #include <nlohmann/json.hpp>
-#include <SmallVector.h>
+#include "SmallVector.h"
 #include <fstream>
-#include <mtet/mtet.h>
-#include <mtet/io.h>
+#include "3rd/mtet/mtet.h"
+#include "3rd/mtet/io.h"
 
 
 #endif /* adaptive_grid_gen_h */

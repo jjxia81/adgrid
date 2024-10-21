@@ -8,7 +8,7 @@
 #pragma once
 
 #include <SmallVector.h>
-#include <implicit_functions.h>
+#include "3rd/implicit_functions/ImplicitFunction.h"
 
 #include "adaptive_grid_gen.h"
 #include "io.h"

@@ -10,7 +10,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <Eigen/Sparse>
-
+#include "3rd/implicit_functions/implicit_functions.h"
 #include <catch2/catch.hpp>
 
 /// tests:

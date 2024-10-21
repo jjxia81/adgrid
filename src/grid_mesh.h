@@ -6,7 +6,7 @@
 #include <vector>
 #include <string>
 #include <cassert>
-#include <mtet/mtet.h>
+#include "3rd/mtet/mtet.h"
 #include <nlohmann/json.hpp>
 
 namespace grid_mesh {

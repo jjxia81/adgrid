@@ -7,8 +7,8 @@
 #pragma once
 
 #include <array>
-#include <SmallVector.h>
-#include <convex_hull_membership/contains.h>
+#include "SmallVector.h"
+#include "3rd/contains.h"
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <Eigen/LU>

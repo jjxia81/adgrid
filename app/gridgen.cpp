@@ -12,7 +12,7 @@
 #include "csg.h"
 #include "grid_mesh.h"
 #include "grid_refine.h"
-
+#include "3rd/implicit_functions/implicit_functions.h"
 
 //using namespace mtet;
 
