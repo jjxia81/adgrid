@@ -7,6 +7,7 @@
 #pragma once
 
 #include <chrono>
+#include <array>
 
 ///The current amount in time profiling.
 const int timer_amount = 10;
@@ -24,6 +25,18 @@ const std::array<std::string, timer_amount> time_label = {"total time: ",
     "evaluations: ",
     "splitting: "
 };
+
+//const std::vector<std::string> time_label = { "total time: ",
+//    "get active multiples: ",
+//    "single func: ",
+//    "two func: ",
+//    "three func: ",
+//    "sub two func: ",
+//    "sub three func: ",
+//    "subdivision: ",
+//    "evaluations: ",
+//    "splitting: "
+//};
 
 /// the enum for the timing labels.
 enum timeProfileName{

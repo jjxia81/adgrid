@@ -54,7 +54,7 @@ extern "C" {
  *     The pool workers will initialize their floating point control
  *     registers accordingly.
  */
-extern NANOTHREAD_EXPORT Pool *
+ Pool *
 pool_create(uint32_t size NANOTHREAD_DEF(NANOTHREAD_AUTO),
             int ftz NANOTHREAD_DEF(1));
 
@@ -67,10 +67,10 @@ pool_create(uint32_t size NANOTHREAD_DEF(NANOTHREAD_AUTO),
  * \param pool
  *     The thread pool to destroy. \c nullptr refers to the default pool.
  */
-extern NANOTHREAD_EXPORT void pool_destroy(Pool *pool NANOTHREAD_DEF(0));
+ void pool_destroy(Pool *pool NANOTHREAD_DEF(0));
 
 /// Returns the number of available CPU cores.
-extern NANOTHREAD_EXPORT uint32_t core_count();
+ uint32_t core_count();
 
 /**
  * \brief Return the number of threads that are part of the pool
@@ -78,7 +78,7 @@ extern NANOTHREAD_EXPORT uint32_t core_count();
  * \param pool
  *     The thread pool to query. \c nullptr refers to the default pool.
  */
-extern NANOTHREAD_EXPORT uint32_t pool_size(Pool *pool NANOTHREAD_DEF(0));
+ uint32_t pool_size(Pool *pool NANOTHREAD_DEF(0));
 
 /**
  * \brief Resize the thread pool to the given number of threads
@@ -86,7 +86,7 @@ extern NANOTHREAD_EXPORT uint32_t pool_size(Pool *pool NANOTHREAD_DEF(0));
  * \param pool
  *     The thread pool to resize. \c nullptr refers to the default pool.
  */
-extern NANOTHREAD_EXPORT void pool_set_size(Pool *pool, uint32_t size);
+ void pool_set_size(Pool *pool, uint32_t size);
 
 /**
  * \brief Enable/disable time profiling
@@ -96,10 +96,10 @@ extern NANOTHREAD_EXPORT void pool_set_size(Pool *pool, uint32_t size);
  * \param value
  *     A nonzero value indicates that profiling should be enabled.
  */
-extern NANOTHREAD_EXPORT void pool_set_profile(int value);
+ void pool_set_profile(int value);
 
 /// Check whether time profiling is enabled (global setting)
-extern NANOTHREAD_EXPORT int pool_profile();
+ int pool_profile();
 
 /**
  * \brief Return a unique number identifying the current worker thread
@@ -111,7 +111,7 @@ extern NANOTHREAD_EXPORT int pool_profile();
  * The IDs of separate thread pools overlap. When the current thread is not a
  * thread pool worker, the function returns zero.
  */
-extern NANOTHREAD_EXPORT uint32_t pool_thread_id();
+ uint32_t pool_thread_id();
 
 /*
  * \brief Submit a new task to a thread pool
@@ -214,7 +214,6 @@ extern NANOTHREAD_EXPORT uint32_t pool_thread_id();
  *     <tt>size==0</tt>, or when <tt>size==1</tt> and the task was executed
  *     synchronously.)
  */
-extern NANOTHREAD_EXPORT
 Task *task_submit_dep(Pool *pool,
                       const Task * const *parent,
                       uint32_t parent_count,
@@ -243,7 +242,7 @@ Task *task_submit_dep(Pool *pool,
  * \param task
  *     The task in question. When equal to \c nullptr, the operation is a no-op.
  */
-extern NANOTHREAD_EXPORT void task_release(Task *task);
+ void task_release(Task *task);
 
 /*
  * \brief Wait for the completion of the specified task
@@ -259,7 +258,7 @@ extern NANOTHREAD_EXPORT void task_release(Task *task);
  * \param task
  *     The task in question. When equal to \c nullptr, the operation is a no-op.
  */
-extern NANOTHREAD_EXPORT void task_wait(Task *task) NANOTHREAD_THROW;
+ void task_wait(Task *task) NANOTHREAD_THROW;
 
 /*
  * \brief Wait for the completion of the specified task and release its handle
@@ -276,7 +275,7 @@ extern NANOTHREAD_EXPORT void task_wait(Task *task) NANOTHREAD_THROW;
  * \param task
  *     The task in question. When equal to \c nullptr, the operation is a no-op.
  */
-extern NANOTHREAD_EXPORT void task_wait_and_release(Task *task) NANOTHREAD_THROW;
+void task_wait_and_release(Task *task) NANOTHREAD_THROW;
 
 /**
  * \brief Return the time consumed by the task in milliseconds
@@ -284,7 +283,7 @@ extern NANOTHREAD_EXPORT void task_wait_and_release(Task *task) NANOTHREAD_THROW
  * To use this function, you must first enable time profiling via \ref
  * pool_set_profile() before launching tasks.
  */
-extern NANOTHREAD_EXPORT float task_time(Task *task) NANOTHREAD_THROW;
+ float task_time(Task *task) NANOTHREAD_THROW;
 
 /*
  * \brief Increase the reference count of a task
@@ -298,7 +297,7 @@ extern NANOTHREAD_EXPORT float task_time(Task *task) NANOTHREAD_THROW;
  * \param task
  *     The task in question. When equal to \c nullptr, the operation is a no-op.
  */
-extern NANOTHREAD_EXPORT void task_retain(Task *task);
+void task_retain(Task *task);
 
 /// Convenience wrapper around task_submit_dep(), but without dependencies
 static inline

@@ -5,6 +5,7 @@
 //  Created by Yiwen Ju on 6/20/24.
 //
 
+#include <array>
 #include "timer.h"
 
 std::array<double, timer_amount> combine_timer (const std::array<double, timer_amount> &profile, const std::array<double, timer_amount> &timer){

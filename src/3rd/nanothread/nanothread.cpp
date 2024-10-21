@@ -439,7 +439,7 @@ void task_wait_and_release(Task *task) NANOTHREAD_THROW {
 static float timer_frequency_scale = 0.f;
 #endif
 
-NANOTHREAD_EXPORT float task_time(Task *task) NANOTHREAD_THROW {
+float task_time(Task *task) NANOTHREAD_THROW {
     if (!task)
         return 0;
 
