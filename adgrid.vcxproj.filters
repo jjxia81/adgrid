@@ -30,9 +30,6 @@
     <ClInclude Include="src\grid_refine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\io.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\refine_crit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -61,9 +58,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\3rd\mtet\indirect_value.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\3rd\mtet\io.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\3rd\mtet\mtet.h">
@@ -150,15 +144,18 @@
     <ClInclude Include="src\3rd\mshio\save_msh_physical_groups.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\io_ad.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\3rd\mtet\mtet_io.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\csg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\grid_refine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\io.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\refine_crit.cpp">
@@ -177,9 +174,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\3rd\nanothread\queue.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\3rd\mtet\io.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\3rd\mtet\mtet.cpp">
@@ -249,6 +243,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\3rd\mshio\validate_spec.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\io_ad.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\3rd\mtet\mtet_io.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

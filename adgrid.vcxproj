@@ -46,9 +46,9 @@
     <ClInclude Include="src\3rd\mshio\save_msh_patches.h" />
     <ClInclude Include="src\3rd\mshio\save_msh_physical_groups.h" />
     <ClInclude Include="src\3rd\mtet\indirect_value.hpp" />
-    <ClInclude Include="src\3rd\mtet\io.h" />
     <ClInclude Include="src\3rd\mtet\mtet.h" />
     <ClInclude Include="src\3rd\mtet\MTetMeshImpl.h" />
+    <ClInclude Include="src\3rd\mtet\mtet_io.h" />
     <ClInclude Include="src\3rd\mtet\slot_map.h" />
     <ClInclude Include="src\3rd\nanothread\nanothread.h" />
     <ClInclude Include="src\3rd\nanothread\queue.h" />
@@ -59,7 +59,7 @@
     <ClInclude Include="src\csg.hpp" />
     <ClInclude Include="src\grid_mesh.h" />
     <ClInclude Include="src\grid_refine.h" />
-    <ClInclude Include="src\io.h" />
+    <ClInclude Include="src\io_ad.h" />
     <ClInclude Include="src\refine_crit.h" />
     <ClInclude Include="src\SmallVector.h" />
     <ClInclude Include="src\tet_quality.h" />
@@ -88,16 +88,14 @@
     <ClCompile Include="src\3rd\mshio\save_msh_patches.cpp" />
     <ClCompile Include="src\3rd\mshio\save_msh_physical_groups.cpp" />
     <ClCompile Include="src\3rd\mshio\validate_spec.cpp" />
-    <ClCompile Include="src\3rd\mtet\io.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="src\3rd\mtet\mtet.cpp" />
+    <ClCompile Include="src\3rd\mtet\mtet_io.cpp" />
     <ClCompile Include="src\3rd\nanothread\nanothread.cpp" />
     <ClCompile Include="src\3rd\nanothread\queue.cpp" />
     <ClCompile Include="src\3rd\predicates.c" />
     <ClCompile Include="src\csg.cpp" />
     <ClCompile Include="src\grid_refine.cpp" />
-    <ClCompile Include="src\io.cpp" />
+    <ClCompile Include="src\io_ad.cpp" />
     <ClCompile Include="src\refine_crit.cpp" />
     <ClCompile Include="src\tet_quality.cpp" />
     <ClCompile Include="src\timer.cpp" />

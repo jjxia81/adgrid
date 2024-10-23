@@ -1,0 +1,73 @@
+﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(1119,5): warning MSB8027: Two or more files with the name of io.cpp will produce outputs to the same location. This can lead to an incorrect build result.  The files involved are src\3rd\mtet\io.cpp, src\io.cpp.
+  element_utils.cpp
+  io_utils.cpp
+  load_msh.cpp
+  load_msh_curves.cpp
+  load_msh_data.cpp
+  load_msh_elements.cpp
+  load_msh_entities.cpp
+  load_msh_format.cpp
+  load_msh_nodes.cpp
+  load_msh_patches.cpp
+  load_msh_physical_groups.cpp
+  load_msh_post_process.cpp
+  save_msh.cpp
+  save_msh_curves.cpp
+  save_msh_data.cpp
+  save_msh_elements.cpp
+  save_msh_entities.cpp
+  save_msh_format.cpp
+  save_msh_nodes.cpp
+  save_msh_patches.cpp
+  Generating Code...
+  Compiling...
+  save_msh_physical_groups.cpp
+  validate_spec.cpp
+  io.cpp
+C:\Users\jianjun.x\Documents\projects\adgrid\src\3rd\mtet\io.cpp(77,51): warning C4267: 'argument': conversion from 'size_t' to '_Ty', possible loss of data
+C:\Users\jianjun.x\Documents\projects\adgrid\src\3rd\mtet\io.cpp(77,51): warning C4267:         with
+C:\Users\jianjun.x\Documents\projects\adgrid\src\3rd\mtet\io.cpp(77,51): warning C4267:         [
+C:\Users\jianjun.x\Documents\projects\adgrid\src\3rd\mtet\io.cpp(77,51): warning C4267:             _Ty=int
+C:\Users\jianjun.x\Documents\projects\adgrid\src\3rd\mtet\io.cpp(77,51): warning C4267:         ]
+  mtet.cpp
+C:\Users\jianjun.x\Documents\projects\adgrid\src\3rd\mtet\MTetMeshImpl.h(792,49): warning C4267: 'argument': conversion from 'size_t' to 'dod::slot_map<mtet::MVertex,dod::slot_map_key64<T>,4096,64>::size_type', possible loss of data
+C:\Users\jianjun.x\Documents\projects\adgrid\src\3rd\mtet\MTetMeshImpl.h(792,49): warning C4267:         with
+C:\Users\jianjun.x\Documents\projects\adgrid\src\3rd\mtet\MTetMeshImpl.h(792,49): warning C4267:         [
+C:\Users\jianjun.x\Documents\projects\adgrid\src\3rd\mtet\MTetMeshImpl.h(792,49): warning C4267:             T=mtet::MVertex
+C:\Users\jianjun.x\Documents\projects\adgrid\src\3rd\mtet\MTetMeshImpl.h(792,49): warning C4267:         ]
+  (compiling source file 'src/3rd/mtet/mtet.cpp')
+  
+C:\Users\jianjun.x\Documents\projects\adgrid\src\3rd\mtet\MTetMeshImpl.h(793,71): warning C4267: 'argument': conversion from 'size_t' to 'dod::slot_map<mtet::MVertex,dod::slot_map_key64<T>,4096,64>::size_type', possible loss of data
+C:\Users\jianjun.x\Documents\projects\adgrid\src\3rd\mtet\MTetMeshImpl.h(793,71): warning C4267:         with
+C:\Users\jianjun.x\Documents\projects\adgrid\src\3rd\mtet\MTetMeshImpl.h(793,71): warning C4267:         [
+C:\Users\jianjun.x\Documents\projects\adgrid\src\3rd\mtet\MTetMeshImpl.h(793,71): warning C4267:             T=mtet::MVertex
+C:\Users\jianjun.x\Documents\projects\adgrid\src\3rd\mtet\MTetMeshImpl.h(793,71): warning C4267:         ]
+  (compiling source file 'src/3rd/mtet/mtet.cpp')
+  
+C:\Users\jianjun.x\Documents\projects\adgrid\src\3rd\mtet\MTetMeshImpl.h(817,45): warning C4267: 'argument': conversion from 'size_t' to 'dod::slot_map<mtet::MTet,dod::slot_map_key64<T>,4096,64>::size_type', possible loss of data
+C:\Users\jianjun.x\Documents\projects\adgrid\src\3rd\mtet\MTetMeshImpl.h(817,45): warning C4267:         with
+C:\Users\jianjun.x\Documents\projects\adgrid\src\3rd\mtet\MTetMeshImpl.h(817,45): warning C4267:         [
+C:\Users\jianjun.x\Documents\projects\adgrid\src\3rd\mtet\MTetMeshImpl.h(817,45): warning C4267:             T=mtet::MTet
+C:\Users\jianjun.x\Documents\projects\adgrid\src\3rd\mtet\MTetMeshImpl.h(817,45): warning C4267:         ]
+  (compiling source file 'src/3rd/mtet/mtet.cpp')
+  
+C:\Users\jianjun.x\Documents\projects\adgrid\src\3rd\mtet\MTetMeshImpl.h(818,64): warning C4267: 'argument': conversion from 'size_t' to 'dod::slot_map<mtet::MTet,dod::slot_map_key64<T>,4096,64>::size_type', possible loss of data
+C:\Users\jianjun.x\Documents\projects\adgrid\src\3rd\mtet\MTetMeshImpl.h(818,64): warning C4267:         with
+C:\Users\jianjun.x\Documents\projects\adgrid\src\3rd\mtet\MTetMeshImpl.h(818,64): warning C4267:         [
+C:\Users\jianjun.x\Documents\projects\adgrid\src\3rd\mtet\MTetMeshImpl.h(818,64): warning C4267:             T=mtet::MTet
+C:\Users\jianjun.x\Documents\projects\adgrid\src\3rd\mtet\MTetMeshImpl.h(818,64): warning C4267:         ]
+  (compiling source file 'src/3rd/mtet/mtet.cpp')
+  
+  nanothread.cpp
+  queue.cpp
+  csg.cpp
+  grid_refine.cpp
+C:\Users\jianjun.x\Documents\projects\adgrid\src\grid_refine.cpp(66,39): warning C4101: 'func_grad': unreferenced local variable
+  io.cpp
+  refine_crit.cpp
+  tet_quality.cpp
+  timer.cpp
+  Generating Code...
+  predicates.c
+adgrid\x64\Debug\io.obj : warning LNK4042: object specified more than once; extras ignored
+  adgrid.vcxproj -> C:\Users\jianjun.x\Documents\projects\adgrid\x64\Debug\adgrid.lib
