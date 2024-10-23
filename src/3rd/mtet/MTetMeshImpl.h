@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include <vector>
 
-#include <SmallVector.h>
+#include "../../SmallVector.h"
 #include "../unordered_dense.h"
 #include "../nanothread/nanothread.h"
 #include "slot_map.h"

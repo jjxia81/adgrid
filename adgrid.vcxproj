@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\3rd\contains.h" />
+    <ClInclude Include="src\3rd\mshio\element_utils.h" />
+    <ClInclude Include="src\3rd\mshio\exception.h" />
+    <ClInclude Include="src\3rd\mshio\io_utils.h" />
+    <ClInclude Include="src\3rd\mshio\load_msh_curves.h" />
+    <ClInclude Include="src\3rd\mshio\load_msh_data.h" />
+    <ClInclude Include="src\3rd\mshio\load_msh_elements.h" />
+    <ClInclude Include="src\3rd\mshio\load_msh_entities.h" />
+    <ClInclude Include="src\3rd\mshio\load_msh_format.h" />
+    <ClInclude Include="src\3rd\mshio\load_msh_nanospline_format.h" />
+    <ClInclude Include="src\3rd\mshio\load_msh_nodes.h" />
+    <ClInclude Include="src\3rd\mshio\load_msh_patches.h" />
+    <ClInclude Include="src\3rd\mshio\load_msh_physical_groups.h" />
+    <ClInclude Include="src\3rd\mshio\load_msh_post_process.h" />
+    <ClInclude Include="src\3rd\mshio\mshio.h" />
+    <ClInclude Include="src\3rd\mshio\MshSpec.h" />
+    <ClInclude Include="src\3rd\mshio\MshSpecExt.h" />
+    <ClInclude Include="src\3rd\mshio\save_msh_curves.h" />
+    <ClInclude Include="src\3rd\mshio\save_msh_data.h" />
+    <ClInclude Include="src\3rd\mshio\save_msh_elements.h" />
+    <ClInclude Include="src\3rd\mshio\save_msh_entities.h" />
+    <ClInclude Include="src\3rd\mshio\save_msh_format.h" />
+    <ClInclude Include="src\3rd\mshio\save_msh_nanospline_format.h" />
+    <ClInclude Include="src\3rd\mshio\save_msh_nodes.h" />
+    <ClInclude Include="src\3rd\mshio\save_msh_patches.h" />
+    <ClInclude Include="src\3rd\mshio\save_msh_physical_groups.h" />
+    <ClInclude Include="src\3rd\mtet\indirect_value.hpp" />
+    <ClInclude Include="src\3rd\mtet\io.h" />
+    <ClInclude Include="src\3rd\mtet\mtet.h" />
+    <ClInclude Include="src\3rd\mtet\MTetMeshImpl.h" />
+    <ClInclude Include="src\3rd\mtet\slot_map.h" />
+    <ClInclude Include="src\3rd\nanothread\nanothread.h" />
+    <ClInclude Include="src\3rd\nanothread\queue.h" />
+    <ClInclude Include="src\3rd\predicates.h" />
+    <ClInclude Include="src\3rd\unordered_dense.h" />
+    <ClInclude Include="src\adaptive_grid_gen.h" />
+    <ClInclude Include="src\csg.h" />
+    <ClInclude Include="src\csg.hpp" />
+    <ClInclude Include="src\grid_mesh.h" />
+    <ClInclude Include="src\grid_refine.h" />
+    <ClInclude Include="src\io.h" />
+    <ClInclude Include="src\refine_crit.h" />
+    <ClInclude Include="src\SmallVector.h" />
+    <ClInclude Include="src\tet_quality.h" />
+    <ClInclude Include="src\timer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\3rd\mshio\element_utils.cpp" />
+    <ClCompile Include="src\3rd\mshio\io_utils.cpp" />
+    <ClCompile Include="src\3rd\mshio\load_msh.cpp" />
+    <ClCompile Include="src\3rd\mshio\load_msh_curves.cpp" />
+    <ClCompile Include="src\3rd\mshio\load_msh_data.cpp" />
+    <ClCompile Include="src\3rd\mshio\load_msh_elements.cpp" />
+    <ClCompile Include="src\3rd\mshio\load_msh_entities.cpp" />
+    <ClCompile Include="src\3rd\mshio\load_msh_format.cpp" />
+    <ClCompile Include="src\3rd\mshio\load_msh_nodes.cpp" />
+    <ClCompile Include="src\3rd\mshio\load_msh_patches.cpp" />
+    <ClCompile Include="src\3rd\mshio\load_msh_physical_groups.cpp" />
+    <ClCompile Include="src\3rd\mshio\load_msh_post_process.cpp" />
+    <ClCompile Include="src\3rd\mshio\save_msh.cpp" />
+    <ClCompile Include="src\3rd\mshio\save_msh_curves.cpp" />
+    <ClCompile Include="src\3rd\mshio\save_msh_data.cpp" />
+    <ClCompile Include="src\3rd\mshio\save_msh_elements.cpp" />
+    <ClCompile Include="src\3rd\mshio\save_msh_entities.cpp" />
+    <ClCompile Include="src\3rd\mshio\save_msh_format.cpp" />
+    <ClCompile Include="src\3rd\mshio\save_msh_nodes.cpp" />
+    <ClCompile Include="src\3rd\mshio\save_msh_patches.cpp" />
+    <ClCompile Include="src\3rd\mshio\save_msh_physical_groups.cpp" />
+    <ClCompile Include="src\3rd\mshio\validate_spec.cpp" />
+    <ClCompile Include="src\3rd\mtet\io.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="src\3rd\mtet\mtet.cpp" />
+    <ClCompile Include="src\3rd\nanothread\nanothread.cpp" />
+    <ClCompile Include="src\3rd\nanothread\queue.cpp" />
+    <ClCompile Include="src\3rd\predicates.c" />
+    <ClCompile Include="src\csg.cpp" />
+    <ClCompile Include="src\grid_refine.cpp" />
+    <ClCompile Include="src\io.cpp" />
+    <ClCompile Include="src\refine_crit.cpp" />
+    <ClCompile Include="src\tet_quality.cpp" />
+    <ClCompile Include="src\timer.cpp" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{97e4b243-87f8-4ac4-9e93-492cf236138a}</ProjectGuid>
+    <RootNamespace>adgrid</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.22621.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_DISABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)$(Platform)\src;$(SolutionDir)$(Platform)\src\3rd;$(SolutionDir)$(Platform)\src\3rd\strong_type;$(SolutionDir)$(Platform)\src\3rd\nanothread;$(SolutionDir)$(Platform)\src\3rd\mtet;$(SolutionDir)$(Platform)\src\3rd\mshio;$(SolutionDir)$(Platform)\src\3rd\implicit_functions;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_DISABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(SolutionDir)$(Platform)\src;$(SolutionDir)$(Platform)\src\3rd;$(SolutionDir)$(Platform)\src\3rd\strong_type;$(SolutionDir)$(Platform)\src\3rd\implicit_functions;$(SolutionDir)$(Platform)\src\3rd\mshio;$(SolutionDir)$(Platform)\src\3rd\mtet;$(SolutionDir)$(Platform)\src\3rd\nanothread;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
