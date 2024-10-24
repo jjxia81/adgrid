@@ -66,6 +66,7 @@
     <ClInclude Include="src\timer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\3rd\implicit_functions\load_functions.cpp" />
     <ClCompile Include="src\3rd\mshio\element_utils.cpp" />
     <ClCompile Include="src\3rd\mshio\io_utils.cpp" />
     <ClCompile Include="src\3rd\mshio\load_msh.cpp" />
@@ -94,6 +95,8 @@
     <ClCompile Include="src\3rd\nanothread\queue.cpp" />
     <ClCompile Include="src\3rd\predicates.c" />
     <ClCompile Include="src\csg.cpp" />
+    <ClCompile Include="src\gridgen.cpp" />
+    <ClCompile Include="src\grid_mesh.cpp" />
     <ClCompile Include="src\grid_refine.cpp" />
     <ClCompile Include="src\io_ad.cpp" />
     <ClCompile Include="src\refine_crit.cpp" />
@@ -215,6 +218,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)$(Platform)\src;$(SolutionDir)$(Platform)\src\3rd;$(SolutionDir)$(Platform)\src\3rd\strong_type;$(SolutionDir)$(Platform)\src\3rd\implicit_functions;$(SolutionDir)$(Platform)\src\3rd\mshio;$(SolutionDir)$(Platform)\src\3rd\mtet;$(SolutionDir)$(Platform)\src\3rd\nanothread;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>
